@@ -16,11 +16,17 @@ function Navbar() {
               <Link to="/about" className="text-gray-600 hover:text-indigo-600">
                 About
               </Link>
+              <Link to="/members" className="text-gray-600 hover:text-indigo-600">
+                Members
+              </Link>
               {user && (
                 <Link to="/my-stats" className="text-gray-600 hover:text-indigo-600">
                   My Progress
                 </Link>
               )}
+              <Link to="/books" className="text-gray-600 hover:text-indigo-600">
+                Trending Books
+              </Link>
             </div>
           </div>
           
