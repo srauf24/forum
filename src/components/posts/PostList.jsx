@@ -183,24 +183,14 @@ function PostList() {
           </h1>
           <p className="text-gray-600">Join the conversation about your favorite books</p>
         </div>
-        {posts?.length > 0 && (
-          user ? (
-            <Link
-              to="/create-post"
-              className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
-                shadow-lg hover:bg-[#5558E5] transition-all duration-300"
-            >
-              Create a Post +
-            </Link>
-          ) : (
-            <Link
-              to="/signin"
-              className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
-                shadow-lg hover:bg-[#5558E5] transition-all duration-300"
-            >
-              Sign in to Post
-            </Link>
-          )
+        {user && (
+          <Link
+            to="/create-post"
+            className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
+              shadow-lg hover:bg-[#5558E5] transition-all duration-300"
+          >
+            Create Post
+          </Link>
         )}
       </div>
       

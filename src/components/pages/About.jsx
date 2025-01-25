@@ -1,8 +1,18 @@
 import React from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
+import { useNavigate } from 'react-router-dom';
 
 function About() {
   const { user, signIn } = useFirebase();
+  const navigate = useNavigate();
+
+  const handleAction = () => {
+    if (user) {
+      navigate('/');  // Redirect to PostList if logged in
+    } else {
+      signIn();  // Sign in if not logged in
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -73,7 +83,7 @@ function About() {
             discover new reads, and become part of our growing community.
           </p>
           <button 
-            onClick={signIn}
+            onClick={handleAction}
             className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white 
               px-8 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 
               transition-all duration-300 font-medium shadow-lg 
