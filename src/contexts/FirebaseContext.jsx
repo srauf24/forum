@@ -29,6 +29,7 @@ export function FirebaseProvider({ children }) {
       await signInWithPopup(auth, provider);
     } catch (error) {
       console.error('Error signing in:', error);
+      throw error;
     }
   };
 
@@ -37,6 +38,7 @@ export function FirebaseProvider({ children }) {
       await firebaseSignOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
+      throw error;
     }
   };
 

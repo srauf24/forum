@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike } from 'react-icons/bi';
 
 function PostList() {
@@ -83,7 +83,11 @@ function PostList() {
                       <span>Posted by {post.authorName}</span>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleVote(post.id, post.voters, 'up')}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleVote(post.id, post.voters, 'up');
+                          }}
                           disabled={!user}
                           className={`text-lg hover:scale-110 transition-transform disabled:opacity-50
                             ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
@@ -95,7 +99,11 @@ function PostList() {
                           {post.upVotes || 0}
                         </span>
                         <button
-                          onClick={() => handleVote(post.id, post.voters, 'down')}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleVote(post.id, post.voters, 'down');
+                          }}
                           disabled={!user}
                           className={`text-lg hover:scale-110 transition-transform disabled:opacity-50 ml-2
                             ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
