@@ -15,35 +15,82 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
-
+import { getDocs, startAfter } from 'firebase/firestore';
 function PostList() {
   const { user, db, calculateLevel } = useFirebase();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Add these state variables at the top with other states
   const [hasMore, setHasMore] = useState(true);
-    const [lastPost, setLastPost] = useState(null);
-  
-    const loadMorePosts = () => {
-      if (!hasMore || loading) return;
+  const [lastPost, setLastPost] = useState(null);
+
+  useEffect(() => {
+    const postsQuery = query(
+      collection(db, 'posts'),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+
+    const unsubscribe = onSnapshot(postsQuery, {
+      next: (snapshot) => {
+        const postsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt
+        }));
+        setPosts(postsData);
+        setLastPost(snapshot.docs[snapshot.docs.length - 1]);
+        setHasMore(snapshot.docs.length === 5);
+        setLoading(false);
+      },
+      error: (error) => {
+        console.error("Error fetching posts:", error);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [db]);
+
+  const loadMorePosts = async () => {
+    if (!hasMore || loading) return;
+    
+    setLoading(true);
+    const nextQuery = query(
+      collection(db, 'posts'),
+      orderBy('createdAt', 'desc'),
+      startAfter(lastPost),
+      limit(5)
+    );
+
+    try {
+      const snapshot = await getDocs(nextQuery);
+      const newPosts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt
+      }));
       
-      const nextQuery = query(
-        collection(db, 'posts'),
-        orderBy('createdAt', 'desc'),
-        startAfter(lastPost),
-        limit(5)
-      );
-      // ... fetch more posts
-    };
-  
-    // Add at the bottom of the posts list
-    {hasMore && (
-      <button 
-        onClick={loadMorePosts}
-        className="w-full py-4 text-center text-gray-600 hover:text-indigo-600 transition-colors"
-      >
-        Load More Discussions
-      </button>
-    )}
+      setPosts(prevPosts => [...prevPosts, ...newPosts]);
+      setLastPost(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMore(snapshot.docs.length === 5);
+    } catch (error) {
+      console.error('Error loading more posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add this at the bottom of your posts list, just before the closing div
+  {hasMore && (
+    <button 
+      onClick={loadMorePosts}
+      className="w-full py-4 text-center text-gray-600 hover:text-indigo-600 transition-colors"
+      disabled={loading}
+    >
+      {loading ? 'Loading...' : 'Load More Discussions'}
+    </button>
+  )}
 
   const handleVote = async (postId, currentVoters, voteType) => {
     if (!user) return;
@@ -77,34 +124,6 @@ function PostList() {
       console.error('Error updating vote:', error);
     }
   };
-
-  useEffect(() => {
-    // Optimize query with pagination and limit
-    const postsQuery = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
-      limit(5)
-    );
-
-    const unsubscribe = onSnapshot(postsQuery, {
-      next: (snapshot) => {
-        const postsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          // Remove the toDate() call here since we'll handle it in the render
-          createdAt: doc.data().createdAt
-        }));
-        setPosts(postsData);
-        setLoading(false);
-      },
-      error: (error) => {
-        console.error("Error fetching posts:", error);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [db]);
 
   // Add loading skeleton
   if (loading) {
@@ -256,6 +275,18 @@ function PostList() {
             </div>
           </div>
         ))}
+
+        {/* Add Load More button here */}
+        {hasMore && (
+          <button 
+            onClick={loadMorePosts}
+            className="w-full py-4 mt-4 text-center text-gray-600 hover:text-indigo-600 
+              transition-colors bg-white rounded-xl border border-gray-100 hover:border-indigo-100"
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Load More Discussions'}
+          </button>
+        )}
       </div>
     </div>
   );
