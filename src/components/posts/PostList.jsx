@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment, limit } from 'firebase/firestore';
-import { BiSolidLike, BiLike, BiSolidDislike, BiDislike } from 'react-icons/bi';
-import UserStats from '../user/UserStats';
+import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';import UserStats from '../user/UserStats';
 function PostList() {
   const { user, db, calculateLevel } = useFirebase();
   const [posts, setPosts] = useState([]);
@@ -119,12 +118,12 @@ function PostList() {
                       handleVote(post.id, post.voters, 'up');
                     }}
                     disabled={!user}
-                    className={`text-lg hover:scale-110 transition-transform disabled:opacity-50
+                    className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
                       ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
                     title={user ? "Like" : "Sign in to vote"}
                   >
                     {post.voters?.[user?.uid] === 'up' ? <BiSolidLike /> : <BiLike />}
-                    <span className="text-xs font-medium ml-1">
+                    <span className="text-sm">
                       {post.upVotes || 0}
                     </span>
                   </button>
@@ -135,15 +134,25 @@ function PostList() {
                       handleVote(post.id, post.voters, 'down');
                     }}
                     disabled={!user}
-                    className={`text-lg hover:scale-110 transition-transform disabled:opacity-50
+                    className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
                       ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
                     title={user ? "Dislike" : "Sign in to vote"}
                   >
                     {post.voters?.[user?.uid] === 'down' ? <BiSolidDislike /> : <BiDislike />}
-                    <span className="text-xs font-medium ml-1">
+                    <span className="text-sm">
                       {post.downVotes || 0}
                     </span>
                   </button>
+                  <Link 
+                    to={`/post/${post.id}`}
+                    className="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 
+                      transition-colors hover:scale-110"
+                  >
+                    <BiComment className="text-lg" />
+                    <span className="text-sm">
+                      {post.commentCount || 0}
+                    </span>
+                  </Link>
                 </div>
               </div>
               <span className="text-sm text-gray-500">
