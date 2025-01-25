@@ -59,7 +59,6 @@ function PostList() {
                 </div>
               )}
               <div>
-                <div className="font-medium">{post.userName}</div>
                 <div className="text-sm text-gray-500">Level {calculateLevel(post.interactions || 0)}</div>
               </div>
             </div>
