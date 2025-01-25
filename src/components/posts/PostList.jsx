@@ -155,7 +155,7 @@ function PostList() {
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-50 to-white 
                   flex items-center justify-center ring-4 ring-indigo-50">
                   <span className="text-2xl font-medium text-indigo-600">
-                    {post.userName?.charAt(0)?.toUpperCase() || '?'}
+                    {post.userName?.charAt(0)?.toUpperCase()}
                   </span>
                 </div>
               )}
