@@ -146,7 +146,6 @@ function PostList() {
                   </button>
                 </div>
               </div>
-              // In the render section, update the date formatting:
               <span className="text-sm text-gray-500">
                 {post.createdAt?.toDate().toLocaleDateString()}
               </span>
