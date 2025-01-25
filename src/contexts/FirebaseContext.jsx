@@ -6,6 +6,7 @@ import {
   GoogleAuthProvider, 
   signOut as firebaseSignOut 
 } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const FirebaseContext = createContext(null);
 const auth = getAuth();
@@ -26,7 +27,15 @@ export function FirebaseProvider({ children }) {
 
   const signIn = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      // Store or update user data in Firestore
+      const userRef = doc(db, 'users', result.user.uid);
+      await setDoc(userRef, {
+        displayName: result.user.displayName,
+        email: result.user.email,
+        photoURL: result.user.photoURL,
+        lastSeen: serverTimestamp(),
+      }, { merge: true }); // merge: true will update existing fields and keep others
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
