@@ -11,14 +11,19 @@ import BooksList from './components/books/BooksList';
 import About from './components/pages/About';
 import MyStats from './components/pages/MyStats';
 import { Analytics } from '@vercel/analytics/react';
-
 function App() {
   return (
-    
     <FirebaseProvider>
       <Router>
-      <Analytics />
+        <Analytics />
         <div className="flex flex-col min-h-screen w-screen">
+          {/* Temporary seed button - remove after use */}
+          <button 
+            onClick={seedDatabase}
+            className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full"
+          >
+            Seed Data
+          </button>
           <Navbar />
           <main className="flex-1 bg-gray-100">
             <div className="w-full max-w-7xl mx-auto px-4 py-8">

@@ -183,175 +183,210 @@ function PostList() {
           </h1>
           <p className="text-gray-600">Join the conversation about your favorite books</p>
         </div>
-        {user ? (
-          <Link
-            to="/create-post"
-            className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
-              shadow-lg hover:bg-[#5558E5] transition-all duration-300"
-          >
-            Create a Post +
-          </Link>
-        ) : (
-          <Link
-            to="/signin"
-            className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
-              shadow-lg hover:bg-[#5558E5] transition-all duration-300"
-          >
-            Sign in to Post
-          </Link>
+        {posts?.length > 0 && (
+          user ? (
+            <Link
+              to="/create-post"
+              className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
+                shadow-lg hover:bg-[#5558E5] transition-all duration-300"
+            >
+              Create a Post +
+            </Link>
+          ) : (
+            <Link
+              to="/signin"
+              className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
+                shadow-lg hover:bg-[#5558E5] transition-all duration-300"
+            >
+              Sign in to Post
+            </Link>
+          )
         )}
       </div>
       
       {/* Posts list with optimizations */}
       <div className="flex flex-col space-y-6">
-        {posts?.map(post => (
-          <div 
-            key={post.id}
-            className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl 
-              transition-all duration-300 border border-gray-100/50 will-change-transform"
-          >
-            {/* Post content with optimized image loading */}
-            <div className="flex items-center space-x-4 mb-6">
-              {post.userPhoto ? (
-                <img 
-                  src={post.userPhoto} 
-                  alt=""
-                  loading="lazy"
-                  className="w-14 h-14 rounded-full ring-4 ring-indigo-50"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-50 to-white 
-                  flex items-center justify-center ring-4 ring-indigo-50">
-                  <span className="text-2xl font-medium text-indigo-600">
-                    {post.userName?.charAt(0)?.toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <div>
-                <div className="text-sm font-medium text-indigo-600">
-                  Level {calculateLevel(post.interactions || 0)}
-                </div>
-              </div>
-            </div>
-
-            <Link to={`/post/${post.id}`} className="group block">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-indigo-600 
-                transition-colors duration-300">
-                {post.title}
-              </h2>
-              <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
-                <span>Book:</span>
-                <span className="text-gray-700">{post.bookTitle}</span>
-              </div>
-              <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
-                <span>Author:</span>
-                <span className="text-gray-700"> {post.bookAuthor}</span>
-              </div>
-              <p className="text-gray-600 leading-relaxed mb-6">{post.content}</p>
-            </Link>
-
-            <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-              <div className="flex items-center space-x-8">
-                <span className="text-sm text-gray-600">{post.userName}</span>
-                <div className="flex items-center space-x-6">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleVote(post.id, post.voters, 'up');
-                    }}
-                    disabled={!user}
-                    className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
-                      ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
-                    title={user ? "Like" : "Sign in to vote"}
-                  >
-                    {post.voters?.[user?.uid] === 'up' ? <BiSolidLike /> : <BiLike />}
-                    <span className="text-sm">
-                      {post.upVotes || 0}
-                    </span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleVote(post.id, post.voters, 'down');
-                    }}
-                    disabled={!user}
-                    className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
-                      ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
-                    title={user ? "Dislike" : "Sign in to vote"}
-                  >
-                    {post.voters?.[user?.uid] === 'down' ? <BiSolidDislike /> : <BiDislike />}
-                    <span className="text-sm">
-                      {post.downVotes || 0}
-                    </span>
-                  </button>
-                  <Link 
-                    to={`/post/${post.id}`}
-                    className="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 
-                      transition-colors hover:scale-110"
-                  >
-                    <BiComment className="text-lg" />
-                    <span className="text-sm">
-                      {post.commentCount || 0}
-                    </span>
-                  </Link>
-                  {/* Updated share buttons section */}
-                  <div className="flex items-center space-x-2 ml-4">
-                    <span className="text-sm text-gray-600">Share:</span>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleShare(post, 'twitter');
-                      }}
-                      className="p-2 text-gray-500 hover:text-blue-400 transition-colors hover:scale-110"
-                      title="Share on Twitter"
-                    >
-                      <FaTwitter className="text-lg" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleShare(post, 'facebook');
-                      }}
-                      className="p-2 text-gray-500 hover:text-blue-600 transition-colors hover:scale-110"
-                      title="Share on Facebook"
-                    >
-                      <FaFacebook className="text-lg" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleShare(post, 'copy');
-                      }}
-                      className="p-2 text-gray-500 hover:text-indigo-600 transition-colors hover:scale-110"
-                      title="Copy Link"
-                    >
-                      <BiCopy className="text-lg" />
-                    </button>
+        {posts?.length === 0 && !loading ? (
+          <div className="text-center py-20 bg-white rounded-3xl shadow-lg border border-gray-100">
+            <h3 className="text-4xl font-bold text-indigo-900 mb-4">
+              No discussions yet
+            </h3>
+            <p className="text-lg text-gray-600 mb-10 max-w-md mx-auto">
+              Be the first to start a discussion about your favorite book!
+            </p>
+            {user ? (
+              <Link
+                to="/create-post"
+                className="inline-flex px-10 py-4 bg-[#6366F1] text-white text-lg font-semibold 
+                  rounded-full shadow-xl hover:bg-[#4F46E5] 
+                  transition-all duration-300 ease-in-out
+                  ring-2 ring-indigo-200"
+              >
+                Create First Post
+              </Link>
+            ) : (
+              <Link
+                to="/signin"
+                className="inline-flex px-10 py-4 bg-[#6366F1] text-white text-lg font-semibold 
+                  rounded-full shadow-xl hover:bg-[#4F46E5] 
+                  transition-all duration-300 ease-in-out
+                  ring-2 ring-indigo-200"
+              >
+                Sign in to Post
+              </Link>
+            )}
+          </div>
+        ) : (
+          <>
+            {posts?.map(post => (
+              <div 
+                key={post.id}
+                className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl 
+                  transition-all duration-300 border border-gray-100/50 will-change-transform"
+              >
+                {/* Post content with optimized image loading */}
+                <div className="flex items-center space-x-4 mb-6">
+                  {post.userPhoto ? (
+                    <img 
+                      src={post.userPhoto} 
+                      alt=""
+                      loading="lazy"
+                      className="w-14 h-14 rounded-full ring-4 ring-indigo-50"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-50 to-white 
+                      flex items-center justify-center ring-4 ring-indigo-50">
+                      <span className="text-2xl font-medium text-indigo-600">
+                        {post.userName?.charAt(0)?.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-sm font-medium text-indigo-600">
+                      Level {calculateLevel(post.interactions || 0)}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="text-sm text-gray-500">
-                {post.createdAt?.toDate().toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-        ))}
 
-        {/* Add Load More button here */}
-        {hasMore && (
-          <button 
-            onClick={loadMorePosts}
-            className="w-full py-4 mt-4 text-center text-gray-600 hover:text-indigo-600 
-              transition-colors bg-white rounded-xl border border-gray-100 hover:border-indigo-100"
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Load More Discussions'}
-          </button>
+                <Link to={`/post/${post.id}`} className="group block">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-indigo-600 
+                    transition-colors duration-300">
+                    {post.title}
+                  </h2>
+                  <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
+                    <span>Book:</span>
+                    <span className="text-gray-700">{post.bookTitle}</span>
+                  </div>
+                  <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
+                    <span>Author:</span>
+                    <span className="text-gray-700"> {post.bookAuthor}</span>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-6">{post.content}</p>
+                </Link>
+
+                <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                  <div className="flex items-center space-x-8">
+                    <span className="text-sm text-gray-600">{post.userName}</span>
+                    <div className="flex items-center space-x-6">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleVote(post.id, post.voters, 'up');
+                        }}
+                        disabled={!user}
+                        className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
+                          ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
+                        title={user ? "Like" : "Sign in to vote"}
+                      >
+                        {post.voters?.[user?.uid] === 'up' ? <BiSolidLike /> : <BiLike />}
+                        <span className="text-sm">
+                          {post.upVotes || 0}
+                        </span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleVote(post.id, post.voters, 'down');
+                        }}
+                        disabled={!user}
+                        className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
+                          ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
+                        title={user ? "Dislike" : "Sign in to vote"}
+                      >
+                        {post.voters?.[user?.uid] === 'down' ? <BiSolidDislike /> : <BiDislike />}
+                        <span className="text-sm">
+                          {post.downVotes || 0}
+                        </span>
+                      </button>
+                      <Link 
+                        to={`/post/${post.id}`}
+                        className="flex items-center space-x-1 text-gray-500 hover:text-indigo-600 
+                          transition-colors hover:scale-110"
+                      >
+                        <BiComment className="text-lg" />
+                        <span className="text-sm">
+                          {post.commentCount || 0}
+                        </span>
+                      </Link>
+                      {/* Updated share buttons section */}
+                      <div className="flex items-center space-x-2 ml-4">
+                        <span className="text-sm text-gray-600">Share:</span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'twitter');
+                          }}
+                          className="p-2 text-gray-500 hover:text-blue-400 transition-colors hover:scale-110"
+                          title="Share on Twitter"
+                        >
+                          <FaTwitter className="text-lg" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'facebook');
+                          }}
+                          className="p-2 text-gray-500 hover:text-blue-600 transition-colors hover:scale-110"
+                          title="Share on Facebook"
+                        >
+                          <FaFacebook className="text-lg" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'copy');
+                          }}
+                          className="p-2 text-gray-500 hover:text-indigo-600 transition-colors hover:scale-110"
+                          title="Copy Link"
+                        >
+                          <BiCopy className="text-lg" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {post.createdAt?.toDate().toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+            
+            {hasMore && (
+              <button 
+                onClick={loadMorePosts}
+                className="w-full py-4 mt-4 text-center text-gray-600 hover:text-indigo-600 
+                  transition-colors bg-white rounded-xl border border-gray-100 hover:border-indigo-100"
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Load More Discussions'}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
