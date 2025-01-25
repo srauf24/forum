@@ -241,14 +241,18 @@ function PostList() {
               </h2>
               <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
                 <span>Book:</span>
-                <span className="text-gray-700">{post.bookTitle} by {post.bookAuthor}</span>
+                <span className="text-gray-700">{post.bookTitle}</span>
+              </div>
+              <div className="text-sm font-medium text-indigo-600 mb-4 flex items-center space-x-2">
+                <span>Author:</span>
+                <span className="text-gray-700"> {post.bookAuthor}</span>
               </div>
               <p className="text-gray-600 leading-relaxed mb-6">{post.content}</p>
             </Link>
 
             <div className="flex items-center justify-between pt-6 border-t border-gray-100">
               <div className="flex items-center space-x-8">
-                <span className="text-sm text-gray-600">Posted by {post.userName}</span>
+                <span className="text-sm text-gray-600">{post.userName}</span>
                 <div className="flex items-center space-x-6">
                   <button
                     onClick={(e) => {
