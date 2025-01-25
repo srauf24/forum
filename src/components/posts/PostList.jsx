@@ -15,10 +15,12 @@ function PostList() {
         {user && (
           <Link
             to="/create-post"
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 
+              transition-colors duration-200 flex items-center space-x-2 font-medium 
+              shadow-md hover:shadow-lg"
           >
-            <span>Create Post</span>
-            <span className="text-xl">+</span>
+            <span className="text-white">Create Post</span>
+            <span className="text-white text-xl"></span>
           </Link>
         )}
       </div>
