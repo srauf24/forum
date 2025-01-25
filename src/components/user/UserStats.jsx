@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-function UserStats({ userId, showProgress = true }) {
+function UserStats({ userId, compact = false }) {
   const { db, calculateLevel, calculateProgress } = useFirebase();
   const [stats, setStats] = useState({
     level: 1,
     progress: 0,
-    achievements: [],
+    totalInteractions: 0,
     totalUpvotes: 0,
-    streak: 0
+    achievements: [], // Add initial empty array for achievements
+    posts: 0
   });
+  const [showProgress, setShowProgress] = useState(false);
 
+  // Remove duplicate useEffects and keep only one
   useEffect(() => {
-    // Query posts for this user
     const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
     const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
 
@@ -30,19 +32,17 @@ function UserStats({ userId, showProgress = true }) {
 
       if (totalUpvotes >= 100) achievements.push('POPULAR_POST');
       if (snapshot.size >= 10) achievements.push('BOOKWORM');
-
-      // Update stats with level calculations
-      const level = calculateLevel(totalInteractions);
-      const progress = calculateProgress(totalInteractions);
-
+      if (totalInteractions >= 500) achievements.push('LITERARY_LUMINARY');
       if (totalInteractions >= 1000) achievements.push('INFLUENCER');
 
       setStats(prev => ({
         ...prev,
-        level,
-        progress,
+        level: calculateLevel(totalInteractions),
+        progress: calculateProgress(totalInteractions),
         achievements: [...new Set([...prev.achievements, ...achievements])],
-        totalUpvotes
+        totalUpvotes,
+        totalInteractions,
+        posts: snapshot.size
       }));
     });
 

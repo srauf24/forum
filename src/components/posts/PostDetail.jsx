@@ -5,6 +5,8 @@ import { doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore';
 import CommentList from '../comments/CommentList';
 import CommentForm from '../comments/CommentForm';
 import UserStats from '../user/UserStats';
+import { BiSolidLike, BiLike, BiSolidDislike, BiDislike } from 'react-icons/bi';
+
 function PostDetail() {
   const { id } = useParams();
   const { user, db } = useFirebase();
@@ -74,42 +76,23 @@ function PostDetail() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center space-x-4">
             <img src={post.userPhoto} alt="" className="w-12 h-12 rounded-full" />
             <div>
               <div className="font-medium text-lg">{post.userName}</div>
-              <UserStats userId={post.userId} />
+              <UserStats userId={post.userId} compact={true} />
             </div>
           </div>
           <div>
             <h1 className="text-3xl font-bold text-indigo-900">{post.title}</h1>
             <div className="text-sm text-indigo-600 mt-2">
-              Posted by {post.authorName}
+              Book: {post.bookTitle} by {post.bookAuthor}
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handleVote(1)}
-              disabled={!user}
-              className="text-2xl text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
-            >
-              ▲
-            </button>
-            <span className="text-xl font-semibold text-indigo-700">
-              {post.votes || 0}
-            </span>
-            <button
-              onClick={() => handleVote(-1)}
-              disabled={!user}
-              className="text-2xl text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
-            >
-              ▼
-            </button>
-          </div>
-          {user && user.uid === post.authorId && (
+          {user && user.uid === post.userId && (
             <button
               onClick={handleDelete}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -118,6 +101,7 @@ function PostDetail() {
             </button>
           )}
         </div>
+        <p className="text-gray-800 mb-4">{post.content}</p>
       </div>
       
       <div className="border-t pt-8">
@@ -126,6 +110,45 @@ function PostDetail() {
           <CommentList postId={id} />
         </div>
       </div>
+      
+      <div className="mt-4 text-sm text-indigo-500 flex items-center justify-between pt-4 border-t">
+        <div className="flex items-center space-x-6">
+          <span>Posted by {post.userName}</span>
+          <div className="flex items-center">
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={() => handleVote('up')}
+                disabled={!user}
+                className={`text-lg hover:scale-110 transition-transform disabled:opacity-50
+                  ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
+                title={user ? "Like" : "Sign in to vote"}
+              >
+                {post.voters?.[user?.uid] === 'up' ? <BiSolidLike /> : <BiLike />}
+              </button>
+              <span className="text-xs font-medium w-4 text-center">
+                {post.upVotes || 0}
+              </span>
+            </div>
+            <div className="flex items-center space-x-1 ml-6">
+              <button
+                onClick={() => handleVote('down')}
+                disabled={!user}
+                className={`text-lg hover:scale-110 transition-transform disabled:opacity-50
+                  ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
+                title={user ? "Dislike" : "Sign in to vote"}
+              >
+                {post.voters?.[user?.uid] === 'down' ? <BiSolidDislike /> : <BiDislike />}
+              </button>
+              <span className="text-xs font-medium w-4 text-center">
+                {post.downVotes || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+        <span>{post.createdAt?.toDate().toLocaleDateString()}</span>
+      </div>
+
+      {/* ... comments section ... */}
     </div>
   );
 }
