@@ -1,12 +1,58 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment, limit } from 'firebase/firestore';
-import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';import UserStats from '../user/UserStats';
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  doc, 
+  updateDoc, 
+  increment, 
+  limit, 
+  writeBatch, 
+  deleteField,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
+
 function PostList() {
   const { user, db, calculateLevel } = useFirebase();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const handleVote = async (postId, currentVoters, voteType) => {
+    if (!user) return;
+    
+    const postRef = doc(db, 'posts', postId);
+    const userVote = currentVoters?.[user.uid];
+    
+    const batch = writeBatch(db);
+    
+    // Remove old vote if exists
+    if (userVote) {
+      batch.update(postRef, {
+        [`${userVote}Votes`]: increment(-1),
+        interactions: increment(-1),
+        [`voters.${user.uid}`]: deleteField()
+      });
+    }
+    
+    // Add new vote if different from old vote
+    if (!userVote || userVote !== voteType) {
+      batch.update(postRef, {
+        [`${voteType}Votes`]: increment(1),
+        interactions: increment(1),
+        [`voters.${user.uid}`]: voteType
+      });
+    }
+    
+    try {
+      await batch.commit();
+    } catch (error) {
+      console.error('Error updating vote:', error);
+    }
+  };
 
   useEffect(() => {
     // Optimize query with pagination and limit
@@ -61,7 +107,32 @@ function PostList() {
 
   return (
     <div className="flex flex-col space-y-8 max-w-5xl mx-auto px-4">
-      {/* Header section remains the same */}
+      {/* Header with Create Post Button */}
+      <div className="flex justify-between items-center py-8">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Recent Discussions
+          </h1>
+          <p className="text-gray-600">Join the conversation about your favorite books</p>
+        </div>
+        {user ? (
+          <Link
+            to="/create-post"
+            className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
+              shadow-lg hover:bg-[#5558E5] transition-all duration-300"
+          >
+            Create a Post +
+          </Link>
+        ) : (
+          <Link
+            to="/signin"
+            className="px-8 py-4 bg-[#6366F1] text-white text-lg font-medium rounded-full
+              shadow-lg hover:bg-[#5558E5] transition-all duration-300"
+          >
+            Sign in to Post
+          </Link>
+        )}
+      </div>
       
       {/* Posts list with optimizations */}
       <div className="flex flex-col space-y-6">
