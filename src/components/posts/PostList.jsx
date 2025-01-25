@@ -16,6 +16,31 @@ import {
 } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
 import { getDocs, startAfter } from 'firebase/firestore';
+// Add these imports at the top
+import { BiShareAlt, BiCopy } from 'react-icons/bi';
+import { FaTwitter, FaFacebook } from 'react-icons/fa';
+
+// Add this function inside PostList component
+const handleShare = async (post, platform) => {
+  const baseUrl = "https://bookclub-khaki.vercel.app";
+  const postUrl = `${baseUrl}/post/${post.id}`;
+  const text = `Check out this discussion about "${post.bookTitle}" on BookForum`;
+  
+  switch (platform) {
+    case 'twitter':
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(postUrl)}`);
+      break;
+    case 'facebook':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`);
+      break;
+    case 'copy':
+      await navigator.clipboard.writeText(postUrl);
+      // You could add a toast notification here
+      alert('Link copied to clipboard!');
+      break;
+  }
+};
+
 function PostList() {
   const { user, db, calculateLevel } = useFirebase();
   const [posts, setPosts] = useState([]);
@@ -267,6 +292,43 @@ function PostList() {
                       {post.commentCount || 0}
                     </span>
                   </Link>
+                  {/* Updated share buttons section */}
+                  <div className="flex items-center space-x-2 ml-4">
+                    <span className="text-sm text-gray-600">Share:</span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleShare(post, 'twitter');
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-400 transition-colors hover:scale-110"
+                      title="Share on Twitter"
+                    >
+                      <FaTwitter className="text-lg" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleShare(post, 'facebook');
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-600 transition-colors hover:scale-110"
+                      title="Share on Facebook"
+                    >
+                      <FaFacebook className="text-lg" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleShare(post, 'copy');
+                      }}
+                      className="p-2 text-gray-500 hover:text-indigo-600 transition-colors hover:scale-110"
+                      title="Copy Link"
+                    >
+                      <BiCopy className="text-lg" />
+                    </button>
+                  </div>
                 </div>
               </div>
               <span className="text-sm text-gray-500">
