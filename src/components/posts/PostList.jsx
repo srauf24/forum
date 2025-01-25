@@ -7,45 +7,23 @@ import UserStats from '../user/UserStats';
 function PostList() {
   const { user, db, calculateLevel, badges, posts, postsLoading, stats } = useFirebase();
 
-  const handleVote = async (postId, voters, voteType) => {
-    if (!user) return;
-    
-    try {
-      const postRef = doc(db, 'posts', postId);
-      const currentVote = voters?.[user.uid] || null;
-      let updates = {};
-
-      if (currentVote === voteType) {
-        // Remove vote if clicking the same button
-        updates = {
-          [`${voteType}Votes`]: increment(-1),
-          voters: { ...voters, [user.uid]: null }
-        };
-      } else {
-        // Add new vote and remove old vote if exists
-        updates = {
-          [`${voteType}Votes`]: increment(1),
-          ...(currentVote && { [`${currentVote}Votes`]: increment(-1) }),
-          voters: { ...voters, [user.uid]: voteType }
-        };
-      }
-      
-      await updateDoc(postRef, updates);
-    } catch (error) {
-      console.error('Error updating votes:', error);
-    }
-  };
-
-  if (postsLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-indigo-600">Loading posts...</div>
-      </div>
-    );
-  }
-  
   return (
     <div className="flex flex-col space-y-6">
+      {/* Add header section with create post button */}
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="text-2xl font-bold text-indigo-900">Recent Discussions</h1>
+        {user && (
+          <Link
+            to="/create-post"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2"
+          >
+            <span>Create Post</span>
+            <span className="text-xl">+</span>
+          </Link>
+        )}
+      </div>
+
+      {/* User stats card */}
       {user && (
         <div className="max-w-sm">
           <div className="bg-white rounded-lg shadow p-4">
@@ -66,6 +44,7 @@ function PostList() {
         </div>
       )}
       
+      {/* Posts list */}
       <div className="flex flex-col space-y-4">
         {posts?.map(post => (
           <div key={post.id} className="bg-white rounded-lg shadow-lg p-6">

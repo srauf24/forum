@@ -36,7 +36,13 @@ function MyStats() {
         return '';
     }
   };
-
+  if (!user) {
+    return (
+      <div className="text-center text-indigo-600">
+        Please sign in to view your stats
+      </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-indigo-900 mb-8">My Progress</h1>

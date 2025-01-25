@@ -15,17 +15,15 @@ function App() {
   return (
     <FirebaseProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50 w-screen overflow-x-hidden">
+        <div className="min-h-screen bg-gray-100">
           <Navbar />
-          <div className="p-8 w-full">
+          <div className="container mx-auto px-4 py-8">
             <Routes>
               <Route path="/" element={<PostList />} />
-              <Route path="/mystats" element={<MyStats />} />
-              <Route path="/about" element={<About />} />
               <Route path="/post/:id" element={<PostDetail />} />
-              <Route path="/create" element={<CreatePost />} />
-              <Route path="/books" element={<BooksList />} />
-              <Route path="/members" element={<MemberList />} />
+              <Route path="/create-post" element={<CreatePost />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/my-stats" element={<MyStats />} />
             </Routes>
           </div>
         </div>
