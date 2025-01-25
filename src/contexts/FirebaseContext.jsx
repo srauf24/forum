@@ -1,20 +1,52 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { db } from '../config/firebase';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut as firebaseSignOut 
+} from 'firebase/auth';
 
-// Create a new React Context for Firebase
 const FirebaseContext = createContext(null);
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
 
-// Provider component that wraps your app and makes Firebase available to any
-// child component that calls useFirebase()
 export function FirebaseProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const signIn = async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Error signing in:', error);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
-    <FirebaseContext.Provider value={{ db }}>
+    <FirebaseContext.Provider value={{ db, user, signIn, signOut, loading }}>
       {children}
     </FirebaseContext.Provider>
   );
 }
 
-// Custom hook to use the Firebase context
 export function useFirebase() {
   return useContext(FirebaseContext);
 }
