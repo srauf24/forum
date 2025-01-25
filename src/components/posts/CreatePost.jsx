@@ -13,26 +13,28 @@ function CreatePost() {
     content: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+    setError('');
+    
     try {
-      const docRef = await addDoc(collection(db, 'posts'), {
+      await addDoc(collection(db, 'posts'), {
         ...formData,
-        authorId: user.uid,
-        authorName: user.displayName || user.email,
+        userId: user.uid,
+        userName: user.displayName,
+        userPhoto: user.photoURL,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
         upVotes: 0,
         downVotes: 0,
-        voters: {}
+        commentCount: 0
       });
-      navigate(`/post/${docRef.id}`);
+      
+      navigate('/');
     } catch (error) {
-      console.error('Error creating post:', error);
-      alert('Failed to create post');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -49,6 +51,11 @@ function CreatePost() {
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
       <h1 className="text-3xl font-bold mb-6 text-indigo-900">Create New Post</h1>
+      {error && (
+        <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-md">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-indigo-700">Post Title</label>

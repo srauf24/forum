@@ -13,11 +13,14 @@ function Navbar() {
               BookForum
             </Link>
             <div className="hidden md:flex space-x-4">
-              <Link to="/books" className="text-indigo-600 hover:text-indigo-800">
-                Trending Books
+              <Link to="/about" className="text-indigo-600 hover:text-indigo-800">
+                About
               </Link>
               <Link to="/members" className="text-indigo-600 hover:text-indigo-800">
                 Members
+              </Link>
+              <Link to="/books" className="text-indigo-600 hover:text-indigo-800">
+                Trending Books
               </Link>
             </div>
           </div>
@@ -30,6 +33,12 @@ function Navbar() {
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
                 >
                   Create Post
+                </Link>
+                <Link
+                  to="/mystats"
+                  className="text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  My Progress
                 </Link>
                 <span className="text-indigo-600 font-medium">Hello, {user.displayName}</span>
                 <button

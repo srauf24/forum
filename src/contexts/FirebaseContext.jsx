@@ -50,9 +50,28 @@ export function FirebaseProvider({ children }) {
       throw error;
     }
   };
+  const calculateLevel = (interactions) => {
+    return Math.floor(Math.sqrt(interactions / 10)) + 1;
+  };
+  
+  const calculateProgress = (interactions) => {
+    const currentLevel = calculateLevel(interactions);
+    const nextLevelPoints = (currentLevel * currentLevel) * 10;
+    const currentLevelPoints = ((currentLevel - 1) * (currentLevel - 1)) * 10;
+    const progress = ((interactions - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
+    return Math.min(progress, 100);
+  };
 
   return (
-    <FirebaseContext.Provider value={{ db, user, signIn, signOut, loading }}>
+    <FirebaseContext.Provider value={{ 
+      db, 
+      user, 
+      signIn, 
+      signOut, 
+      loading,
+      calculateLevel,
+      calculateProgress 
+    }}>
       {children}
     </FirebaseContext.Provider>
   );

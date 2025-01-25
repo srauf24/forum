@@ -8,16 +8,20 @@ import { FirebaseProvider } from './contexts/FirebaseContext';
 import MemberList from './components/members/MemberList';
 // Add import
 import BooksList from './components/books/BooksList';
+import About from './components/pages/About';
+import MyStats from './components/pages/MyStats';
 
 function App() {
   return (
     <FirebaseProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 w-screen overflow-x-hidden">
           <Navbar />
-          <div className="max-w-screen-2xl mx-auto px-4 py-8">
+          <div className="p-8 w-full">
             <Routes>
               <Route path="/" element={<PostList />} />
+              <Route path="/mystats" element={<MyStats />} />
+              <Route path="/about" element={<About />} />
               <Route path="/post/:id" element={<PostDetail />} />
               <Route path="/create" element={<CreatePost />} />
               <Route path="/books" element={<BooksList />} />

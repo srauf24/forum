@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore';
 import CommentList from '../comments/CommentList';
 import CommentForm from '../comments/CommentForm';
+import UserStats from '../user/UserStats';
 function PostDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { db, user } = useFirebase();
+  const { user, db } = useFirebase();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -74,15 +74,22 @@ function PostDetail() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-indigo-900">{post.title}</h1>
-          <div className="text-sm text-indigo-600 mt-2">
-            Posted by {post.authorName}
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex items-center space-x-4">
+            <img src={post.userPhoto} alt="" className="w-12 h-12 rounded-full" />
+            <div>
+              <div className="font-medium text-lg">{post.userName}</div>
+              <UserStats userId={post.userId} />
+            </div>
           </div>
-        </div>
-        <div className="flex items-center space-x-4">
+          <div>
+            <h1 className="text-3xl font-bold text-indigo-900">{post.title}</h1>
+            <div className="text-sm text-indigo-600 mt-2">
+              Posted by {post.authorName}
+            </div>
+          </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handleVote(1)}
