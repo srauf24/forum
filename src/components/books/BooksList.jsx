@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { onSnapshot } from 'firebase/firestore';
+import { analyzeReviews } from '../../utils/sentimentAnalyzer';
+
 function BooksList() {
   const { db } = useFirebase();
   const [books, setBooks] = useState([]);
@@ -16,10 +18,17 @@ function BooksList() {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const booksMap = new Map();
+      const postsMap = new Map();
       
       snapshot.docs.forEach(doc => {
         const post = doc.data();
         const bookKey = `${post.bookTitle}-${post.bookAuthor}`;
+        
+        // Store posts for sentiment analysis
+        if (!postsMap.has(bookKey)) {
+          postsMap.set(bookKey, []);
+        }
+        postsMap.get(bookKey).push(post);
         
         if (!booksMap.has(bookKey)) {
           booksMap.set(bookKey, {
@@ -27,7 +36,8 @@ function BooksList() {
             author: post.bookAuthor,
             upVotes: post.upVotes || 0,
             downVotes: post.downVotes || 0,
-            discussionCount: post.commentCount || 0
+            discussionCount: post.commentCount || 0,
+            sentiment: null
           });
         } else {
           const book = booksMap.get(bookKey);
@@ -36,6 +46,12 @@ function BooksList() {
           book.discussionCount += (post.commentCount || 0);
         }
       });
+
+      // Add sentiment analysis
+      for (const [key, posts] of postsMap.entries()) {
+        const book = booksMap.get(key);
+        book.sentiment = analyzeReviews(posts);
+      }
 
       const booksArray = Array.from(booksMap.values())
         .sort((a, b) => (b.upVotes - b.downVotes) - (a.upVotes - a.downVotes));
@@ -63,6 +79,11 @@ function BooksList() {
                 {book.discussionCount} discussion{book.discussionCount !== 1 ? 's' : ''} · 
                 {book.upVotes - book.downVotes} votes
               </div>
+              {book.sentiment && (
+                <div className="text-sm text-emerald-600 mt-1">
+                  {book.sentiment.readerMood} this book
+                </div>
+              )}
             </div>
           </div>
         ))}
