@@ -5,27 +5,7 @@ import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment } fro
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike } from 'react-icons/bi';
 import UserStats from '../user/UserStats';
 function PostList() {
-  const { user, db, calculateLevel } = useFirebase();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const q = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setPosts(postsData);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [db]);
+  const { user, db, calculateLevel, badges, posts, postsLoading, stats } = useFirebase();
 
   const handleVote = async (postId, voters, voteType) => {
     if (!user) return;
@@ -56,24 +36,38 @@ function PostList() {
     }
   };
 
-  if (loading) {
+  if (postsLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-indigo-600">Loading posts...</div>
       </div>
     );
   }
-
+  
   return (
     <div className="flex flex-col space-y-6">
       {user && (
         <div className="max-w-sm">
-          <UserStats userId={user.uid} />
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm font-medium text-gray-600 mb-2">Badges:</div>
+            <div className="flex gap-2">
+              {[...Array(4)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center"
+                >
+                  {stats?.achievements[i] && (
+                    <span>{badges[stats.achievements[i]]?.icon}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
       
       <div className="flex flex-col space-y-4">
-        {posts.map(post => (
+        {posts?.map(post => (
           <div key={post.id} className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center space-x-4 mb-4">
               {post.userPhoto ? (

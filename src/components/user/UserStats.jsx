@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-function UserStats({ userId }) {
+function UserStats({ userId, showProgress = true }) {
   const { db, calculateLevel, calculateProgress } = useFirebase();
   const [stats, setStats] = useState({
     level: 1,
@@ -216,46 +216,35 @@ function UserStats({ userId }) {
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold">Level {stats.level}</h3>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div 
-              className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" 
-              style={{ width: `${stats.progress}%` }}
-            />
+      {showProgress && (
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold">Level {stats.level}</h3>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500" 
+                style={{ width: `${stats.progress}%` }}
+              />
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              Next level: {stats.progress.toFixed(0)}% complete
+            </div>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Next level: {stats.progress.toFixed(0)}% complete
-          </div>
+          <div className="text-2xl">{stats.totalUpvotes} ❤️</div>
         </div>
-        <div className="text-2xl">{stats.totalUpvotes} ❤️</div>
-      </div>
+      )}
       
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
         {Object.entries(badges).map(([key, badge]) => {
-          const progress = {
-            BOOKWORM: { current: stats.posts || 0, goal: 10 },
-            CONTRIBUTOR: { current: stats.comments || 0, goal: 50 },
-            LITERARY_LUMINARY: { current: stats.totalInteractions || 0, goal: 500 },
-            INFLUENCER: { current: stats.totalInteractions || 0, goal: 1000 }
-          }[key];
-          
           const isAchieved = stats.achievements.includes(key);
           
-          return (
-            <div key={key} className={`flex items-center justify-between p-2 rounded-lg ${
-              isAchieved ? 'bg-indigo-50' : 'bg-gray-50'
-            }`}>
-              <div className="flex items-center gap-2">
-                <span>{badge.icon}</span>
-                <span className={`text-sm ${isAchieved ? 'text-indigo-700' : 'text-gray-600'}`}>
-                  {badge.name}
-                </span>
-              </div>
-              <span className="text-xs font-medium">
-                {progress.current}/{progress.goal}
-              </span>
+          return isAchieved && (
+            <div 
+              key={key}
+              className="flex items-center bg-indigo-50 px-2 py-0.5 rounded-full"
+              title={badge.name}
+            >
+              <span>{badge.icon}</span>
             </div>
           );
         })}

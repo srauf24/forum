@@ -6,15 +6,97 @@ import {
   GoogleAuthProvider, 
   signOut as firebaseSignOut 
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  doc, 
+  setDoc, 
+  serverTimestamp,
+  where  // Add this import
+} from 'firebase/firestore';
 
 const FirebaseContext = createContext(null);
 const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
+export const badges = {
+  BOOKWORM: { icon: "📚", name: "Bookworm", goal: 10 },
+  CONTRIBUTOR: { icon: "✍️", name: "Contributor", goal: 50 },
+  LITERARY_LUMINARY: { icon: "🌟", name: "Literary Luminary", goal: 500 },
+  INFLUENCER: { icon: "👑", name: "Influencer", goal: 1000 }
+};
+
 export function FirebaseProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    achievements: [],
+    level: 1,
+    progress: 0,
+    totalInteractions: 0,
+    posts: 0,
+    comments: 0
+  });
+
+  // Add stats tracking
+  useEffect(() => {
+    if (!user) return;
+
+    const postsQuery = query(collection(db, 'posts'), where('userId', '==', user.uid));
+    const commentsQuery = query(collection(db, 'comments'), where('userId', '==', user.uid));
+
+    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
+      let totalInteractions = 0;
+      let achievements = [];
+      const postsCount = snapshot.size;
+      
+      if (postsCount >= 10) achievements.push('BOOKWORM');
+      
+      snapshot.docs.forEach(doc => {
+        const post = doc.data();
+        const postInteractions = (post.upVotes || 0) + (post.downVotes || 0) + (post.commentCount || 0);
+        totalInteractions += postInteractions;
+        
+        if (postInteractions >= 500) achievements.push('LITERARY_LUMINARY');
+      });
+      
+      if (totalInteractions >= 1000) achievements.push('INFLUENCER');
+
+      setStats(prev => ({
+        ...prev,
+        posts: postsCount,
+        achievements: [...new Set([...prev.achievements, ...achievements])],
+        totalInteractions,
+        level: calculateLevel(totalInteractions),
+        progress: calculateProgress(totalInteractions)
+      }));
+    });
+
+    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
+      const commentsCount = snapshot.size;
+      if (commentsCount >= 50) {
+        setStats(prev => ({
+          ...prev,
+          comments: commentsCount,
+          achievements: [...new Set([...prev.achievements, 'CONTRIBUTOR'])]
+        }));
+      } else {
+        setStats(prev => ({
+          ...prev,
+          comments: commentsCount
+        }));
+      }
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeComments();
+    };
+  }, [user, db]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -62,6 +144,25 @@ export function FirebaseProvider({ children }) {
     return Math.min(progress, 100);
   };
 
+  // Add posts fetching
+  useEffect(() => {
+    const q = query(
+      collection(db, 'posts'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const postsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setPosts(postsData);
+      setPostsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [db]);
+
   return (
     <FirebaseContext.Provider value={{ 
       db, 
@@ -70,7 +171,11 @@ export function FirebaseProvider({ children }) {
       signOut, 
       loading,
       calculateLevel,
-      calculateProgress 
+      calculateProgress,
+      badges,
+      stats,
+      posts, // Add posts to context
+      postsLoading // Add postsLoading to context
     }}>
       {children}
     </FirebaseContext.Provider>
