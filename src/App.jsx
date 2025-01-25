@@ -10,11 +10,14 @@ import MemberList from './components/members/MemberList';
 import BooksList from './components/books/BooksList';
 import About from './components/pages/About';
 import MyStats from './components/pages/MyStats';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   return (
+    
     <FirebaseProvider>
       <Router>
+      <Analytics />
         <div className="flex flex-col min-h-screen w-screen">
           <Navbar />
           <main className="flex-1 bg-gray-100">
