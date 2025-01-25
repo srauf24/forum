@@ -68,4 +68,15 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* Add these at the top of your index.css file */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+}
 

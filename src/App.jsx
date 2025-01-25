@@ -15,19 +15,21 @@ function App() {
   return (
     <FirebaseProvider>
       <Router>
-        <div className="min-h-screen bg-gray-100">
+        <div className="flex flex-col min-h-screen w-screen">
           <Navbar />
-          <div className="container mx-auto px-4 py-8">
-            <Routes>
-              <Route path="/" element={<PostList />} />
-              <Route path="/books" element={<BooksList />} />
-              <Route path="/post/:id" element={<PostDetail />} />
-              <Route path="/create-post" element={<CreatePost />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/my-stats" element={<MyStats />} />
-              <Route path="/members" element={<MemberList />} />
-            </Routes>
-          </div>
+          <main className="flex-1 bg-gray-100">
+            <div className="w-full max-w-7xl mx-auto px-4 py-8">
+              <Routes>
+                <Route path="/" element={<PostList />} />
+                <Route path="/books" element={<BooksList />} />
+                <Route path="/post/:id" element={<PostDetail />} />
+                <Route path="/create-post" element={<CreatePost />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/my-stats" element={<MyStats />} />
+                <Route path="/members" element={<MemberList />} />
+              </Routes>
+            </div>
+          </main>
         </div>
       </Router>
     </FirebaseProvider>

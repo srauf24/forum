@@ -5,8 +5,8 @@ function Navbar() {
   const { user, signIn, signOut } = useFirebase();
 
   return (
-    <nav className="bg-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4">
+    <nav className="bg-white shadow-lg w-full">
+      <div className="w-full max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-8">
             <Link to="/" className="text-xl font-bold text-indigo-600">
