@@ -1,15 +1,43 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import CommentList from '../comments/CommentList';
 import CommentForm from '../comments/CommentForm';
-
 function PostDetail() {
   const { id } = useParams();
-  const { db } = useFirebase();
+  const navigate = useNavigate();
+  const { db, user } = useFirebase();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const handleVote = async (increment) => {
+    if (!user) return;
+    
+    try {
+      const postRef = doc(db, 'posts', id);
+      const newVotes = (post.votes || 0) + increment;
+      const voters = { ...post.voters, [user.uid]: increment };
+      
+      await updateDoc(postRef, {
+        votes: newVotes,
+        voters: voters
+      });
+    } catch (error) {
+      console.error('Error updating votes:', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        await deleteDoc(doc(db, 'posts', id));
+        navigate('/');
+      } catch (error) {
+        console.error('Error deleting post:', error);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -47,16 +75,42 @@ function PostDetail() {
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
-      <h1 className="text-3xl font-bold text-indigo-900 mb-4">{post.title}</h1>
-      <div className="text-lg text-indigo-700 mb-6">
-        Book: {post.bookTitle} by {post.bookAuthor}
-      </div>
-      <div className="prose max-w-none mb-8">
-        <p className="text-gray-800 whitespace-pre-wrap">{post.content}</p>
-      </div>
-      <div className="text-sm text-indigo-500 mb-8">
-        Posted on {post.createdAt?.toDate().toLocaleDateString()}
-        <span className="ml-4">❤️ {post.likes}</span>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-indigo-900">{post.title}</h1>
+          <div className="text-sm text-indigo-600 mt-2">
+            Posted by {post.authorName}
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleVote(1)}
+              disabled={!user}
+              className="text-2xl text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+            >
+              ▲
+            </button>
+            <span className="text-xl font-semibold text-indigo-700">
+              {post.votes || 0}
+            </span>
+            <button
+              onClick={() => handleVote(-1)}
+              disabled={!user}
+              className="text-2xl text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+            >
+              ▼
+            </button>
+          </div>
+          {user && user.uid === post.authorId && (
+            <button
+              onClick={handleDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Delete
+            </button>
+          )}
+        </div>
       </div>
       
       <div className="border-t pt-8">

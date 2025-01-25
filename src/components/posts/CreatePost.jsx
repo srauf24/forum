@@ -4,7 +4,7 @@ import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 function CreatePost() {
-  const { db } = useFirebase();
+  const { db, user } = useFirebase();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
@@ -21,9 +21,13 @@ function CreatePost() {
     try {
       const docRef = await addDoc(collection(db, 'posts'), {
         ...formData,
+        authorId: user.uid,
+        authorName: user.displayName || user.email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        likes: 0
+        upVotes: 0,
+        downVotes: 0,
+        voters: {}
       });
       navigate(`/post/${docRef.id}`);
     } catch (error) {
