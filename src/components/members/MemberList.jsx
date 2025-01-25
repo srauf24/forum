@@ -3,7 +3,7 @@ import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestor
 import { useFirebase } from '../../contexts/FirebaseContext';
 
 function MemberList() {
-  const { db } = useFirebase();
+  const { db, calculateLevel } = useFirebase();  // Add calculateLevel to destructuring
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,54 +68,84 @@ function MemberList() {
   }, [db]);
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-indigo-900 mb-8">Community Members</h1>
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posts</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comments</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Interactions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {members.map(member => (
-              <tr key={member.id} className="hover:bg-indigo-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center space-x-4">
-                    {member.photoURL ? (
-                      <img src={member.photoURL} alt="" className="w-10 h-10 rounded-full" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <span className="text-lg font-medium text-indigo-600">
-                          {member.displayName?.charAt(0) || '?'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="font-medium text-gray-900">
-                      {member.displayName}
-                    </div>
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      {/* Header */}
+      <div className="text-center space-y-4 mb-12">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-900 to-indigo-700 
+          bg-clip-text text-transparent">
+          Our Community Members
+        </h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Meet our amazing readers and contributors who make this community special
+        </p>
+      </div>
+
+      {/* Members Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {members?.map(member => (
+          <div key={member.id} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl 
+            transition-all duration-300 border border-gray-100/50">
+            <div className="flex items-center space-x-4">
+              {member.photoURL ? (
+                <img 
+                  src={member.photoURL} 
+                  alt={member.displayName} 
+                  className="w-16 h-16 rounded-full ring-4 ring-indigo-50"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-50 to-white 
+                  flex items-center justify-center ring-4 ring-indigo-50">
+                  <span className="text-2xl font-medium text-indigo-600">
+                    {member.displayName?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                </div>
+              )}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {member.displayName}
+                </h3>
+                <div className="text-sm font-medium text-indigo-600">
+                  Level {calculateLevel(member.stats?.interactions || 0)}  {/* Update to use stats.interactions */}
+                </div>
+              </div>
+            </div>
+
+            {/* Member Stats */}
+            <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">
+                  {member.posts?.length || 0}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Posts</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">
+                  {member.interactions || 0}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Interactions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">
+                  {member.achievements?.length || 0}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Badges</div>
+              </div>
+            </div>
+
+            {/* Achievement Badges */}
+            {member.achievements?.length > 0 && (
+              <div className="mt-6 flex gap-2">
+                {member.achievements.map((achievement, index) => (
+                  <div key={index} 
+                    className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center
+                      transition-all duration-200 hover:scale-110">
+                    <span className="text-lg">{achievement.icon}</span>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {member.lastSeen?.toLocaleDateString() || 'Unknown'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {member.stats.posts}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {member.stats.comments}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {member.stats.interactions}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
