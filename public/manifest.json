@@ -1,0 +1,15 @@
+{
+  "short_name": "BookForum",
+  "name": "BookForum | Literary Discussions",
+  "icons": [
+    {
+      "src": "forum-logo.jpeg",
+      "sizes": "64x64",
+      "type": "image/jpeg"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#6366F1",
+  "background_color": "#ffffff"
+}
