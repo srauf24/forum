@@ -8,24 +8,44 @@ function TrendingBooks() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Use a more efficient query with fewer reads
     const booksQuery = query(
       collection(db, 'posts'),
       orderBy('interactions', 'desc'),
-      limit(6)
+      limit(3) // Reduce initial load
     );
 
-    const unsubscribe = onSnapshot(booksQuery, (snapshot) => {
-      const booksData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate()
-      }));
-      setBooks(booksData);
-      setLoading(false);
+    const unsubscribe = onSnapshot(booksQuery, {
+      next: (snapshot) => {
+        const booksData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate()
+        }));
+        setBooks(booksData);
+        setLoading(false);
+      },
+      error: (error) => {
+        console.error("Error fetching books:", error);
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
   }, [db]);
+
+  // Add loading state
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="animate-pulse space-y-8">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-gray-100 h-64 rounded-2xl"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -43,16 +63,19 @@ function TrendingBooks() {
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {books.map(book => (
-          <div key={book.id} 
+          <div 
+            key={book.id}
             className="group bg-white rounded-2xl p-6 shadow-md hover:shadow-xl 
-              transition-all duration-300 border border-gray-100/50">
-            {/* Book Cover & Title */}
+              transition-all duration-300 border border-gray-100/50 will-change-transform"
+          >
+            {/* Book content remains the same but with optimized image loading */}
             <div className="relative mb-6 overflow-hidden rounded-xl">
               <div className="aspect-w-3 aspect-h-4 bg-gradient-to-br from-indigo-50 to-white">
                 {book.bookCover ? (
                   <img 
                     src={book.bookCover} 
                     alt={book.bookTitle}
+                    loading="lazy"
                     className="object-cover w-full h-full transform group-hover:scale-105 
                       transition-transform duration-300"
                   />

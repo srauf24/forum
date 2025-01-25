@@ -1,71 +1,67 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 import { useFirebase } from '../../contexts/FirebaseContext';
 
 function MemberList() {
-  const { db, calculateLevel } = useFirebase();  // Add calculateLevel to destructuring
+  const { db, calculateLevel } = useFirebase();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMemberStats = async (userId) => {
-      // Get posts stats
-      const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
-      const postsSnap = await onSnapshot(postsQuery, (snapshot) => {
-        let postsCount = 0;
-        let votesCount = 0;
-        
-        snapshot.docs.forEach(doc => {
-          postsCount++;
-          const post = doc.data();
-          votesCount += (post.upVotes || 0) + (post.downVotes || 0);
-        });
-        
-        // Get comments stats
-        const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
-        onSnapshot(commentsQuery, (commentsSnap) => {
-          const commentsCount = commentsSnap.size;
-          
-          // Update member stats
-          setMembers(prev => prev.map(member => {
-            if (member.id === userId) {
-              return {
-                ...member,
-                stats: {
-                  posts: postsCount,
-                  comments: commentsCount,
-                  interactions: postsCount + commentsCount + votesCount
-                }
-              };
-            }
-            return member;
-          }));
-        });
-      });
-    };
+    const usersQuery = query(
+      collection(db, 'users'),
+      orderBy('lastSeen', 'desc'),
+      limit(6)
+    );
 
-    // Fetch users and their stats
-    const usersQuery = query(collection(db, 'users'), orderBy('lastSeen', 'desc'));
-    const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
-      const membersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        lastSeen: doc.data().lastSeen?.toDate(),
-        stats: {
-          posts: 0,
-          comments: 0,
-          interactions: 0
-        }
-      }));
-      
-      setMembers(membersData);
-      // Fetch stats for each member
-      membersData.forEach(member => fetchMemberStats(member.id));
-      setLoading(false);
+    const unsubscribe = onSnapshot(usersQuery, {
+      next: (snapshot) => {
+        const membersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          lastSeen: doc.data().lastSeen,
+          stats: {
+            posts: 0,
+            comments: 0,
+            interactions: 0
+          }
+        }));
+        setMembers(membersData);
+        setLoading(false);
+      },
+      error: (error) => {
+        console.error("Error fetching members:", error);
+        setLoading(false);
+      }
     });
 
     return () => unsubscribe();
   }, [db]);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl p-6 space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/3 mt-2"></div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
