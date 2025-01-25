@@ -78,30 +78,37 @@ function PostDetail() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center space-x-4">
-            <img src={post.userPhoto} alt="" className="w-12 h-12 rounded-full" />
-            <div>
-              <div className="font-medium text-lg">{post.userName}</div>
-              <UserStats userId={post.userId} compact={true} />
+        <div className="flex flex-col space-y-4">
+          {/* User info and delete button row */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <img src={post.userPhoto} alt="" className="w-12 h-12 rounded-full" />
+              <div>
+                <div className="font-medium text-lg">{post.userName}</div>
+                <UserStats userId={post.userId} compact={true} />
+              </div>
             </div>
+            {user && user.uid === post.userId && (
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Delete
+              </button>
+            )}
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-indigo-900">{post.title}</h1>
-            <div className="text-sm text-indigo-600 mt-2">
+          
+          {/* Title and book info */}
+          <div className="border-b pb-4">
+            <h1 className="text-3xl font-bold text-indigo-900 mb-2">{post.title}</h1>
+            <div className="text-sm text-indigo-600">
               Book: {post.bookTitle} by {post.bookAuthor}
             </div>
           </div>
-          {user && user.uid === post.userId && (
-            <button
-              onClick={handleDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Delete
-            </button>
-          )}
+          
+          {/* Content */}
+          <p className="text-gray-800">{post.content}</p>
         </div>
-        <p className="text-gray-800 mb-4">{post.content}</p>
       </div>
       
       <div className="border-t pt-8">
