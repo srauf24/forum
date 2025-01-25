@@ -1,65 +1,88 @@
 import React from 'react';
+import { useFirebase } from '../../contexts/FirebaseContext';
 
 function About() {
+  const { user, signIn } = useFirebase();
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-indigo-900 mb-8">About BookForum</h1>
-      
-      <section className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Our Purpose</h2>
-        <p className="text-gray-700 mb-4">
-          BookForum is a community-driven platform where book enthusiasts can share their thoughts,
-          discuss their favorite reads, and discover new literary treasures. We believe in fostering
-          meaningful discussions about books while rewarding active participation.
-        </p>
-      </section>
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="space-y-12">
+        {/* Hero Section */}
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-900 to-indigo-700 
+            bg-clip-text text-transparent">
+            Welcome to BookClub
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            A community where book lovers come together to share their reading journey
+            and discover new literary adventures.
+          </p>
+        </div>
 
-      <section className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Level System</h2>
-        <p className="text-gray-700 mb-4">
-          Your level reflects your contribution to the community. You gain experience through:
-        </p>
-        <ul className="list-disc list-inside text-gray-700 ml-4 space-y-2">
-          <li>Creating posts</li>
-          <li>Receiving upvotes</li>
-          <li>Writing comments</li>
-          <li>Engaging in discussions</li>
-        </ul>
-      </section>
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 gap-8 py-8">
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl 
+            transition-all duration-300 border border-gray-100/50">
+            <div className="text-3xl text-indigo-600 mb-4">📚</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Share Your Thoughts</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Create discussions about your favorite books, share reviews, and connect
+              with readers who share your literary interests.
+            </p>
+          </div>
 
-      <section className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold text-indigo-800 mb-4">Achievements</h2>
-        <div className="grid gap-4">
-          <div className="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
-            <span className="text-2xl">📚</span>
-            <div>
-              <h3 className="font-semibold text-indigo-900">Bookworm</h3>
-              <p className="text-sm text-gray-600">Create 10 book discussions</p>
-            </div>
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl 
+            transition-all duration-300 border border-gray-100/50">
+            <div className="text-3xl text-indigo-600 mb-4">🏆</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Earn Achievements</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Get recognized for your contributions to the community. Unlock special
+              badges as you participate and engage with other readers.
+            </p>
           </div>
-          <div className="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
-            <span className="text-2xl">✍️</span>
-            <div>
-              <h3 className="font-semibold text-indigo-900">Contributor</h3>
-              <p className="text-sm text-gray-600">Write 50 comments</p>
-            </div>
+
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl 
+            transition-all duration-300 border border-gray-100/50">
+            <div className="text-3xl text-indigo-600 mb-4">💭</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Join Discussions</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Engage in meaningful conversations about books, authors, and genres.
+              Discover new perspectives and insights.
+            </p>
           </div>
-          <div className="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
-            <span className="text-2xl">🌟</span>
-            <div>
-              <h3 className="font-semibold text-indigo-900">Literary Luminary</h3>
-              <p className="text-sm text-gray-600">Receive 500 total interactions on your discussions</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-indigo-50 rounded-lg">
-            <span className="text-2xl">👑</span>
-            <div>
-              <h3 className="font-semibold text-indigo-900">Influencer</h3>
-              <p className="text-sm text-gray-600">Reach 1,000 total interactions</p>
-            </div>
+
+          <div className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl 
+            transition-all duration-300 border border-gray-100/50">
+            <div className="text-3xl text-indigo-600 mb-4">📖</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Track Your Progress</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Monitor your reading journey, set goals, and celebrate your literary
+              achievements with our community.
+            </p>
           </div>
         </div>
-      </section>
+
+        {/* Call to Action */}
+        <div className="text-center bg-gradient-to-r from-indigo-50 to-indigo-100 
+          rounded-2xl p-12 shadow-inner">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Ready to Join Our Community?
+          </h2>
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            Start your journey with fellow book lovers today. Share your stories,
+            discover new reads, and become part of our growing community.
+          </p>
+          <button 
+            onClick={signIn}
+            className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white 
+              px-8 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 
+              transition-all duration-300 font-medium shadow-lg 
+              hover:shadow-indigo-500/25 hover:-translate-y-0.5"
+          >
+            {user ? 'Go to Discussions' : 'Sign In to Get Started'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
