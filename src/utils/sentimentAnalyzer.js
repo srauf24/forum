@@ -17,10 +17,10 @@ export const analyzeReviews = (posts) => {
 };
 
 const interpretSentiment = (score) => {
-  if (score > 3) return "Readers are loving";
-  if (score > 1) return "Readers really enjoy";
-  if (score > 0) return "Readers like";
-  if (score === 0) return "Mixed opinions about";
-  if (score > -1) return "Readers are unsure about";
-  return "Readers find challenging";
+  if (score > 3) return "is highly rated by readers";
+  if (score > 1) return "is well received by readers";
+  if (score > 0) return "has positive reader feedback";
+  if (score === 0) return "has mixed reader reviews";
+  if (score > -1) return "has mixed reader opinions";
+  return "received critical feedback";
 };

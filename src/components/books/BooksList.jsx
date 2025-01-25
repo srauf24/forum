@@ -80,8 +80,8 @@ function BooksList() {
                 {book.upVotes - book.downVotes} votes
               </div>
               {book.sentiment && (
-                <div className="text-sm text-emerald-600 mt-1">
-                  {book.sentiment.readerMood} this book
+                <div className="text-sm text-gray-900 mt-1">
+                  This book <strong>{book.sentiment.readerMood}</strong>
                 </div>
               )}
             </div>
