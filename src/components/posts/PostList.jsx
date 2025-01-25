@@ -20,6 +20,30 @@ function PostList() {
   const { user, db, calculateLevel } = useFirebase();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+    const [lastPost, setLastPost] = useState(null);
+  
+    const loadMorePosts = () => {
+      if (!hasMore || loading) return;
+      
+      const nextQuery = query(
+        collection(db, 'posts'),
+        orderBy('createdAt', 'desc'),
+        startAfter(lastPost),
+        limit(5)
+      );
+      // ... fetch more posts
+    };
+  
+    // Add at the bottom of the posts list
+    {hasMore && (
+      <button 
+        onClick={loadMorePosts}
+        className="w-full py-4 text-center text-gray-600 hover:text-indigo-600 transition-colors"
+      >
+        Load More Discussions
+      </button>
+    )}
 
   const handleVote = async (postId, currentVoters, voteType) => {
     if (!user) return;
@@ -107,7 +131,7 @@ function PostList() {
 
   return (
     <div className="flex flex-col space-y-8 max-w-5xl mx-auto px-4">
-      {/* Header with Create Post Button */}
+      {/* Header section */}
       <div className="flex justify-between items-center py-8">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold text-gray-900">
