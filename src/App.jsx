@@ -10,6 +10,10 @@ import MemberList from './components/members/MemberList';
 import BooksList from './components/books/BooksList';
 import About from './components/pages/About';
 import MyStats from './components/pages/MyStats';
+import Progress from './components/pages/Progress';
+
+// In your Routes component
+<Route path="/progress" element={<Progress />} />
 import { Analytics } from '@vercel/analytics/react';
 function App() {
   return (
