@@ -1,11 +1,25 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db } from '../../../firebase/config';
 
+async function logCronExecution(status, details) {
+  try {
+    await db.collection('system_logs').add({
+      type: 'cron_job',
+      timestamp: new Date(),
+      status: status,
+      details: details,
+      jobType: 'daily-discussion'
+    });
+  } catch (error) {
+    console.error('Logging failed:', error);
+  }
+}
+
 export default async function handler(req, res) {
-  console.log('🤖 Cron job started:', new Date().toISOString());
+  await logCronExecution('started', { timestamp: new Date().toISOString() });
 
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    console.log('❌ Unauthorized cron attempt');
+    await logCronExecution('unauthorized', { error: 'Invalid authorization' });
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -43,9 +57,17 @@ export default async function handler(req, res) {
     });
 
     console.log('✅ Discussion posted successfully, id:', docRef.id);
+    await logCronExecution('success', {
+      postId: docRef.id,
+      topic: topic.title
+    });
+
     res.status(200).json({ success: true, topic, postId: docRef.id });
   } catch (error) {
-    console.error('❌ Daily discussion generation failed:', error);
+    await logCronExecution('error', {
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({ error: 'Failed to generate discussion' });
   }
 }
