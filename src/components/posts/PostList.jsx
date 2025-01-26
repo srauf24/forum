@@ -365,43 +365,6 @@ function PostList() {
                           {post.commentCount || 0}
                         </span>
                       </Link>
-                      {/* Updated share buttons section */}
-                      <div className="flex items-center space-x-2 ml-4">
-                        <span className="text-sm text-gray-600">Share:</span>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleShare(post, 'twitter');
-                          }}
-                          className="p-2 text-gray-500 hover:text-blue-400 transition-colors hover:scale-110"
-                          title="Share on Twitter"
-                        >
-                          <FaTwitter className="text-lg" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleShare(post, 'facebook');
-                          }}
-                          className="p-2 text-gray-500 hover:text-blue-600 transition-colors hover:scale-110"
-                          title="Share on Facebook"
-                        >
-                          <FaFacebook className="text-lg" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleShare(post, 'copy');
-                          }}
-                          className="p-2 text-gray-500 hover:text-indigo-600 transition-colors hover:scale-110"
-                          title="Copy Link"
-                        >
-                          <BiCopy className="text-lg" />
-                        </button>
-                      </div>
                     </div>
                   </div>
                   <span className="text-sm text-gray-500">
