@@ -21,7 +21,16 @@ function Navbar() {
                   My Progress
                 </Link>
               )}
-              {user && (
+            {user && (
+              <Link
+                to="/reading-list"
+                className="text-gray-600 hover:text-indigo-600 px-4 py-2 rounded-full
+                  hover:bg-indigo-50 transition-all duration-300"
+              >
+                Reading List
+              </Link>
+            )}
+                          {user && (
                 <Link to="/recommendations" className="text-gray-600 hover:text-indigo-600">
                   Recommendations
                 </Link>

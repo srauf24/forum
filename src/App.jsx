@@ -6,6 +6,7 @@ import PostDetail from './components/posts/PostDetail';
 import CreatePost from './components/posts/CreatePost';
 import { FirebaseProvider } from './contexts/FirebaseContext';
 import MemberList from './components/members/MemberList';
+import ReadingList from './components/reading-list/ReadingList';
 // Add import
 import BooksList from './components/books/BooksList';
 import About from './components/pages/About';
@@ -42,6 +43,14 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
+                <Route
+                path="/reading-list"
+                element={
+                  <ProtectedRoute>
+                    <ReadingList />
+                  </ProtectedRoute>
+                }
+              />
                 <Route 
                   path="/recommendations" 
                   element={

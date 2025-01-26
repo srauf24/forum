@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { addToReadingList } from '../reading-list/ReadingList';
 
 function Recommendations() {
   const { user, db } = useFirebase();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [addedBooks, setAddedBooks] = useState(new Set()); // Add this line
 
   useEffect(() => {
     const fetchUserReadingHistory = async () => {
@@ -129,6 +131,15 @@ function Recommendations() {
       </div>
     );
   }
+  const handleAddToList = async (book) => {
+    if (!user) return;
+    
+    const success = await addToReadingList(db, user.uid, book);
+    if (success) {
+      setAddedBooks(current => new Set([...current, book.title]));
+    }
+  };
+
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 bg-gradient-to-b from-white to-gray-50">
@@ -178,14 +189,30 @@ function Recommendations() {
                 {book.description}
               </p>
               <div className="pt-6 border-t border-gray-100">
-                <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleAddToList(book)}
+                  disabled={addedBooks.has(book.title)}
+                  className={`flex items-center space-x-2 ${
+                    addedBooks.has(book.title)
+                      ? 'text-green-600 cursor-default'
+                      : 'text-indigo-600 hover:text-indigo-700'
+                  }`}
+                >
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    {addedBooks.has(book.title) ? (
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-500">Add to Reading List</span>
-                </div>
+                  <span className="text-sm">
+                    {addedBooks.has(book.title) ? 'Added to list' : 'Add to Reading List'}
+                  </span>
+                </button>
               </div>
             </div>
           ))}
