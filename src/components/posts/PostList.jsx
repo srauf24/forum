@@ -14,13 +14,34 @@ import {
   deleteField,
   serverTimestamp,
   where,  // Added this import
-  getDoc,
   getDocs, 
   startAfter 
 } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
 // Add these imports at the top
+import { BiShareAlt, BiCopy } from 'react-icons/bi';
+import { FaTwitter, FaFacebook } from 'react-icons/fa';
 
+// Add this function inside PostList component
+const handleShare = async (post, platform) => {
+  const baseUrl = "https://bookclub-khaki.vercel.app";
+  const postUrl = `${baseUrl}/post/${post.id}`;
+  const text = `Check out this discussion about "${post.bookTitle}" on BookForum`;
+  
+  switch (platform) {
+    case 'twitter':
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(postUrl)}`);
+      break;
+    case 'facebook':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`);
+      break;
+    case 'copy':
+      await navigator.clipboard.writeText(postUrl);
+      // You could add a toast notification here
+      alert('Link copied to clipboard!');
+      break;
+  }
+};
 
 function PostList() {
   const { user, db, calculateLevel } = useFirebase();
@@ -137,7 +158,7 @@ function PostList() {
     </button>
   )}
 
-  const handleVote = async (postId, currentVoters, voteType) => {
+  const handleVote = async (postId, currentVoters, voteType, post) => {
     if (!user) return;
     
     const postRef = doc(db, 'posts', postId);
@@ -147,10 +168,8 @@ function PostList() {
     
     // Remove old vote if exists
     if (userVote) {
-      // Get current post data
-      const postSnap = await getDoc(postRef);
-      const currentVotes = postSnap.data()[`${userVote}Votes`] || 0;
-      
+      // Get the current vote count safely
+      const currentVotes = (userVote === 'up' ? post.upVotes : post.downVotes) || 0;
       if (currentVotes > 0) {  // Only decrement if current value is > 0
         batch.update(postRef, {
           [`${userVote}Votes`]: increment(-1),
@@ -308,7 +327,7 @@ function PostList() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleVote(post.id, post.voters, 'up');
+                          handleVote(post.id, post.voters, 'up', post); // Add post as the fourth parameter
                         }}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
@@ -324,7 +343,7 @@ function PostList() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleVote(post.id, post.voters, 'down');
+                          handleVote(post.id, post.voters, 'down', post); // Add post as the fourth parameter
                         }}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
@@ -345,7 +364,44 @@ function PostList() {
                         <span className="text-sm">
                           {post.commentCount || 0}
                         </span>
-                      </Link>                      
+                      </Link>
+                      {/* Updated share buttons section */}
+                      <div className="flex items-center space-x-2 ml-4">
+                        <span className="text-sm text-gray-600">Share:</span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'twitter');
+                          }}
+                          className="p-2 text-gray-500 hover:text-blue-400 transition-colors hover:scale-110"
+                          title="Share on Twitter"
+                        >
+                          <FaTwitter className="text-lg" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'facebook');
+                          }}
+                          className="p-2 text-gray-500 hover:text-blue-600 transition-colors hover:scale-110"
+                          title="Share on Facebook"
+                        >
+                          <FaFacebook className="text-lg" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleShare(post, 'copy');
+                          }}
+                          className="p-2 text-gray-500 hover:text-indigo-600 transition-colors hover:scale-110"
+                          title="Copy Link"
+                        >
+                          <BiCopy className="text-lg" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <span className="text-sm text-gray-500">

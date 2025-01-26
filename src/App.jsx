@@ -11,6 +11,9 @@ import BooksList from './components/books/BooksList';
 import About from './components/pages/About';
 import MyStats from './components/pages/MyStats';
 import Progress from './components/pages/Progress';
+// Add import at the top
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Recommendations from './components/recommendations/Recommendations';
 
 // In your Routes component
 <Route path="/progress" element={<Progress />} />
@@ -30,7 +33,23 @@ function App() {
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/create-post" element={<CreatePost />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/my-stats" element={<MyStats />} />
+                // Update these routes in your Routes component
+                <Route 
+                  path="/my-stats" 
+                  element={
+                    <ProtectedRoute>
+                      <MyStats />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/recommendations" 
+                  element={
+                    <ProtectedRoute>
+                      <Recommendations />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route path="/members" element={<MemberList />} />
               </Routes>
             </div>

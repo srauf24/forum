@@ -21,6 +21,11 @@ function Navbar() {
                   My Progress
                 </Link>
               )}
+              {user && (
+                <Link to="/recommendations" className="text-gray-600 hover:text-indigo-600">
+                  Recommendations
+                </Link>
+              )}
               <Link to="/members" className="text-gray-600 hover:text-indigo-600">
                 Members
               </Link>
