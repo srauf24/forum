@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from 'firebase/firestore';
 import { useFirebase } from '../../contexts/FirebaseContext';
 
 function MemberList() {
@@ -14,25 +14,52 @@ function MemberList() {
       limit(6)
     );
 
-    const unsubscribe = onSnapshot(usersQuery, {
-      next: (snapshot) => {
-        const membersData = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(usersQuery, async (snapshot) => {
+      const membersData = await Promise.all(snapshot.docs.map(async (doc) => {
+        const userData = doc.data();
+        
+        // Fetch posts and their comments
+        const postsQuery = query(
+          collection(db, 'posts'),
+          where('userId', '==', doc.id)
+        );
+        const postsSnap = await getDocs(postsQuery);
+        
+        // Track likes, dislikes, and comments separately
+        let totalLikes = 0;
+        let totalDislikes = 0;
+        let totalComments = 0;
+        
+        postsSnap.forEach(post => {
+          const postData = post.data();
+          totalLikes += (postData.upVotes || 0);
+          totalDislikes += (postData.downVotes || 0);
+          totalComments += (postData.commentCount || 0);
+        });
+
+        const commentsQuery = query(
+          collection(db, 'comments'),
+          where('userId', '==', doc.id)
+        );
+        const commentsSnap = await getDocs(commentsQuery);
+        totalComments += commentsSnap.size;
+
+        const totalInteractions = totalLikes + totalDislikes + totalComments;
+
+        return {
           id: doc.id,
-          ...doc.data(),
-          lastSeen: doc.data().lastSeen,
-          stats: {
-            posts: 0,
-            comments: 0,
-            interactions: 0
-          }
-        }));
-        setMembers(membersData);
-        setLoading(false);
-      },
-      error: (error) => {
-        console.error("Error fetching members:", error);
-        setLoading(false);
-      }
+          ...userData,
+          posts: postsSnap.size,
+          comments: totalComments,
+          likes: totalLikes,
+          dislikes: totalDislikes,
+          interactions: totalInteractions,
+          achievements: calculateAchievements(postsSnap.size, totalComments, totalInteractions)
+        };
+      }));
+
+      setMembers(membersData);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -110,15 +137,21 @@ function MemberList() {
             <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
-                  {member.posts?.length || 0}
+                  {member.posts || 0}
                 </div>
                 <div className="text-xs text-gray-500 uppercase tracking-wide">Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
-                  {member.interactions || 0}
+                <div className="text-2xl font-bold text-emerald-600">
+                  {member.likes || 0}
                 </div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Interactions</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Likes</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-rose-600">
+                  {member.dislikes || 0}
+                </div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">Dislikes</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">
