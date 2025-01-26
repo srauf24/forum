@@ -15,7 +15,7 @@ import Progress from './components/pages/Progress';
 // Add import at the top
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Recommendations from './components/recommendations/Recommendations';
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 // In your Routes component
 <Route path="/progress" element={<Progress />} />
 import { Analytics } from '@vercel/analytics/react';
@@ -23,6 +23,7 @@ function App() {
   return (
     <FirebaseProvider>
       <Router>
+        <SpeedInsights />
         <Analytics />
         <div className="flex flex-col min-h-screen w-screen">
           <Navbar />
