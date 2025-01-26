@@ -36,10 +36,25 @@ function Recommendations() {
   const getRecommendations = async (books) => {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
+  
     const prompt = `Based on these books: ${books.map(b => `"${b.title}" by ${b.author}`).join(', ')}, 
-                   suggest 5 books with brief descriptions. Format as JSON array with title, author, and description fields.`;
-
+      suggest 5 books that readers might enjoy. For each recommendation:
+      - Choose books from different authors to provide variety
+      - Focus on similar themes, writing styles, or genres
+      - Include both classic and contemporary options
+      - Consider the complexity and tone of the source books
+  
+      Format the response as a JSON array with objects containing:
+      {
+        "title": "Book Title",
+        "author": "Author Name",
+        "description": "A 2-3 sentence description highlighting themes and appeal",
+        "genre": "Primary genre",
+        "yearPublished": "Year of publication"
+      }
+  
+      Keep descriptions concise but informative, focusing on what makes each book a good match.`;
+  
     try {
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -49,6 +64,23 @@ function Recommendations() {
       return [];
     }
   };
+  
+  // Update the recommendation card to show new fields
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {recommendations.map((book, index) => (
+      <div key={index} className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{book.title}</h3>
+        <div className="flex items-center space-x-2 mb-4">
+          <p className="text-sm text-indigo-600">by {book.author}</p>
+          <span className="text-gray-400">•</span>
+          <p className="text-sm text-gray-500">{book.genre}</p>
+          <span className="text-gray-400">•</span>
+          <p className="text-sm text-gray-500">{book.yearPublished}</p>
+        </div>
+        <p className="text-gray-600">{book.description}</p>
+      </div>
+    ))}
+  </div>
 
   if (loading) {
     return (
