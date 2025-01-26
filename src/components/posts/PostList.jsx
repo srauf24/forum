@@ -12,10 +12,12 @@ import {
   limit, 
   writeBatch, 
   deleteField,
-  serverTimestamp 
+  serverTimestamp,
+  where,  // Added this import
+  getDocs, 
+  startAfter 
 } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
-import { getDocs, startAfter } from 'firebase/firestore';
 // Add these imports at the top
 import { BiShareAlt, BiCopy } from 'react-icons/bi';
 import { FaTwitter, FaFacebook } from 'react-icons/fa';
@@ -56,22 +58,40 @@ function PostList() {
       limit(5)
     );
 
-    const unsubscribe = onSnapshot(postsQuery, {
-      next: (snapshot) => {
-        const postsData = snapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(postsQuery, async (snapshot) => {
+      const postsData = await Promise.all(snapshot.docs.map(async (doc) => {
+        const postData = doc.data();
+        console.log('Current post data:', postData.title, 'Comment count:', postData.commentCount);
+        
+        // Get comments collection for this post
+        // In the useEffect and loadMorePosts functions, update the comments query:
+        const commentsRef = collection(db, 'posts', doc.id, 'comments');
+        const commentsQuery = query(commentsRef);  // Remove the where clause since we're already in the post's subcollection
+        const commentsSnap = await getDocs(commentsQuery);
+                
+        console.log('Actual comments count:', commentsSnap.size, 'for post:', postData.title);
+        
+        // Update post's commentCount if it doesn't match
+        if (commentsSnap.size !== postData.commentCount) {
+          console.log('Updating comment count from', postData.commentCount, 'to', commentsSnap.size);
+          await updateDoc(doc.ref, {
+            commentCount: commentsSnap.size
+          });
+        }
+
+        return {
           id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt
-        }));
-        setPosts(postsData);
-        setLastPost(snapshot.docs[snapshot.docs.length - 1]);
-        setHasMore(snapshot.docs.length === 5);
-        setLoading(false);
-      },
-      error: (error) => {
-        console.error("Error fetching posts:", error);
-        setLoading(false);
-      }
+          ...postData,
+          commentCount: commentsSnap.size,
+          createdAt: postData.createdAt
+        };
+      }));
+    
+      console.log('Final posts data:', postsData.map(p => ({ title: p.title, comments: p.commentCount })));
+      setPosts(postsData);
+      setLastPost(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMore(snapshot.docs.length === 5);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -90,12 +110,33 @@ function PostList() {
 
     try {
       const snapshot = await getDocs(nextQuery);
-      const newPosts = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt
+      const newPosts = await Promise.all(snapshot.docs.map(async (doc) => {
+        const postData = doc.data();
+        console.log('Loading more - Current post:', postData.title, 'Comment count:', postData.commentCount);
+        
+        // Get comments for this post
+        const commentsRef = collection(db, 'comments');
+        const commentsQuery = query(commentsRef, where('postId', '==', doc.id));
+        const commentsSnap = await getDocs(commentsQuery);
+        
+        console.log('Loading more - Actual comments:', commentsSnap.size, 'for post:', postData.title);
+        
+        if (commentsSnap.size !== postData.commentCount) {
+          console.log('Loading more - Updating count from', postData.commentCount, 'to', commentsSnap.size);
+          await updateDoc(doc.ref, {
+            commentCount: commentsSnap.size
+          });
+        }
+
+        return {
+          id: doc.id,
+          ...postData,
+          commentCount: commentsSnap.size,
+          createdAt: postData.createdAt
+        };
       }));
       
+      console.log('Loading more - Final data:', newPosts.map(p => ({ title: p.title, comments: p.commentCount })));
       setPosts(prevPosts => [...prevPosts, ...newPosts]);
       setLastPost(snapshot.docs[snapshot.docs.length - 1]);
       setHasMore(snapshot.docs.length === 5);

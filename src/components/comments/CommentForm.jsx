@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
+import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
 function CommentForm({ postId }) {
   const { db } = useFirebase();
   const [content, setContent] = useState('');
@@ -13,10 +12,18 @@ function CommentForm({ postId }) {
     
     setLoading(true);
     try {
+      // Add comment to subcollection
       await addDoc(collection(db, `posts/${postId}/comments`), {
         content,
         createdAt: serverTimestamp()
       });
+  
+      // Update post's comment count
+      const postRef = doc(db, 'posts', postId);
+      await updateDoc(postRef, {
+        commentCount: increment(1)
+      });
+  
       setContent('');
     } catch (error) {
       console.error('Error adding comment:', error);
