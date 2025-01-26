@@ -2,7 +2,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db } from '../../../firebase/config';
 
 export default async function handler(req, res) {
+  console.log('🤖 Cron job started:', new Date().toISOString());
+
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    console.log('❌ Unauthorized cron attempt');
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -22,8 +25,10 @@ export default async function handler(req, res) {
     const result = await model.generateContent(prompt);
     const topic = JSON.parse(result.response.text());
     
+    console.log('📚 Generated topic:', topic);
+
     // Add to Firestore
-    await db.collection('posts').add({
+    const docRef = await db.collection('posts').add({
       title: topic.title,
       content: topic.content,
       createdAt: new Date(),
@@ -37,9 +42,10 @@ export default async function handler(req, res) {
       tags: ['daily-discussion', ...(topic.tags || [])]
     });
 
-    res.status(200).json({ success: true, topic });
+    console.log('✅ Discussion posted successfully, id:', docRef.id);
+    res.status(200).json({ success: true, topic, postId: docRef.id });
   } catch (error) {
-    console.error('Daily discussion generation failed:', error);
+    console.error('❌ Daily discussion generation failed:', error);
     res.status(500).json({ error: 'Failed to generate discussion' });
   }
 }
