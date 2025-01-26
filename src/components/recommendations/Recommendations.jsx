@@ -76,6 +76,44 @@ function Recommendations() {
     }
   };
 
+  const simulateSearch = async (book) => {
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  
+    const searchPrompt = `Act as a search engine analyzing "${book.title}" by ${book.author}.
+      1. Find similar books based on:
+         - Genre matches
+         - Theme analysis
+         - Writing style
+         - Time period
+      2. Discover related discussions from:
+         - Book reviews
+         - Literary analyses
+         - Reader recommendations
+      
+      Format response as:
+      {
+        "searchResults": [
+          {
+            "title": "Found book title",
+            "relevance": "Why this book matches",
+            "confidence": 0-100
+          }
+        ],
+        "relatedTopics": ["topic1", "topic2"],
+        "searchInsights": "Key patterns found"
+      }`;
+  
+    try {
+      const result = await model.generateContent(searchPrompt);
+      const response = await result.response;
+      return JSON.parse(response.text());
+    } catch (error) {
+      console.error('Search simulation error:', error);
+      return null;
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-12">
@@ -93,34 +131,62 @@ function Recommendations() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+    <div className="max-w-6xl mx-auto px-6 py-12 bg-gradient-to-b from-white to-gray-50">
+      <h1 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
         Your Book Recommendations
       </h1>
+      <p className="text-lg text-gray-600 mb-12 font-light">
+        Curated selections based on your literary interests
+      </p>
       
       {recommendations.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl shadow-sm">
-          <p className="text-lg text-gray-600 mb-4">
-            Interact with book discussions to get personalized recommendations
+        <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100/50 backdrop-blur-sm">
+          <h3 className="text-2xl font-light text-gray-800 mb-4">
+            Waiting to discover your taste
+          </h3>
+          <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+            Interact with book discussions to receive personalized recommendations
           </p>
-          <Link to="/" className="text-indigo-600 hover:text-indigo-700">
-            Browse Discussions
+          <Link 
+            to="/" 
+            className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 
+              text-white text-lg font-medium rounded-full hover:from-indigo-700 hover:to-indigo-800 
+              transition-all duration-300 shadow-md hover:shadow-xl"
+          >
+            Explore Discussions
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {recommendations.map((book, index) => (
-            <div key={index} className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{book.title}</h3>
-              <div className="flex items-center space-x-2 mb-4">
-                <p className="text-sm text-indigo-600">by {book.author}</p>
-                <span className="text-gray-400">•</span>
-                <p className="text-sm text-gray-500">{book.genre}</p>
-                <span className="text-gray-400">•</span>
-                <p className="text-sm text-gray-500">{book.yearPublished}</p>
+            <div 
+              key={index} 
+              className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-all duration-300 
+                border border-gray-100/50 backdrop-blur-sm hover:border-indigo-100/50"
+            >
+              <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+                {book.title}
+              </h3>
+              <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
+                <span className="font-medium text-indigo-600">by {book.author}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                <span className="text-gray-600 font-medium">{book.genre}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                <span className="text-gray-600">{book.yearPublished}</span>
               </div>
-              <p className="text-gray-600 mb-4">{book.description}</p>
-              <p className="text-sm text-indigo-500 italic">Recommended by: {book.recommendedBy}</p>
+              <p className="text-gray-600 leading-relaxed mb-6 font-light">
+                {book.description}
+              </p>
+              <div className="pt-6 border-t border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-500">Add to Reading List</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
