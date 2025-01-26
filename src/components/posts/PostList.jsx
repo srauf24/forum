@@ -14,6 +14,7 @@ import {
   deleteField,
   serverTimestamp,
   where,  // Added this import
+  getDoc,
   getDocs, 
   startAfter 
 } from 'firebase/firestore';
@@ -168,11 +169,17 @@ function PostList() {
     
     // Remove old vote if exists
     if (userVote) {
-      batch.update(postRef, {
-        [`${userVote}Votes`]: increment(-1),
-        interactions: increment(-1),
-        [`voters.${user.uid}`]: deleteField()
-      });
+      // Get current post data
+      const postSnap = await getDoc(postRef);
+      const currentVotes = postSnap.data()[`${userVote}Votes`] || 0;
+      
+      if (currentVotes > 0) {  // Only decrement if current value is > 0
+        batch.update(postRef, {
+          [`${userVote}Votes`]: increment(-1),
+          interactions: increment(-1),
+          [`voters.${user.uid}`]: deleteField()
+        });
+      }
     }
     
     // Add new vote if different from old vote
