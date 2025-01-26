@@ -37,50 +37,44 @@ function Recommendations() {
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
   
-    const prompt = `Based on these books: ${books.map(b => `"${b.title}" by ${b.author}`).join(', ')}, 
-      suggest 5 books that readers might enjoy. For each recommendation:
-      - Choose books from different authors to provide variety
-      - Focus on similar themes, writing styles, or genres
-      - Include both classic and contemporary options
-      - Consider the complexity and tone of the source books
+    const prompt = `You are a book recommendation system with three expert personas:
+      - A Classic Literature Professor
+      - A Contemporary Fiction Expert
+      - A Genre Specialist
   
-      Format the response as a JSON array with objects containing:
+      Based on these books: ${books.map(b => `"${b.title}" by ${b.author}`).join(', ')}
+  
+      Generate exactly 5 book recommendations. Return ONLY a JSON array without any additional text or markdown formatting.
+      Each object in the array must follow this exact format:
       {
         "title": "Book Title",
         "author": "Author Name",
-        "description": "A 2-3 sentence description highlighting themes and appeal",
+        "description": "The experts' collective reasoning for this recommendation",
         "genre": "Primary genre",
-        "yearPublished": "Year of publication"
+        "yearPublished": "Year",
+        "recommendedBy": "Name of the expert(s) who recommended this book"
       }
   
-      Keep descriptions concise but informative, focusing on what makes each book a good match.`;
+      Consider:
+      - Thematic connections
+      - Writing style similarities
+      - Reader experience level
+      - Genre preferences
+      - Historical context
+  
+      IMPORTANT: Return ONLY the JSON array, no other text.`;
   
     try {
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      return JSON.parse(response.text());
+      const cleanedResponse = response.text().replace(/```json\n?|\n?```/g, '').trim();
+      return JSON.parse(cleanedResponse);
     } catch (error) {
       console.error('Error getting recommendations:', error);
+      console.log('Raw response:', response?.text());
       return [];
     }
   };
-  
-  // Update the recommendation card to show new fields
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {recommendations.map((book, index) => (
-      <div key={index} className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">{book.title}</h3>
-        <div className="flex items-center space-x-2 mb-4">
-          <p className="text-sm text-indigo-600">by {book.author}</p>
-          <span className="text-gray-400">•</span>
-          <p className="text-sm text-gray-500">{book.genre}</p>
-          <span className="text-gray-400">•</span>
-          <p className="text-sm text-gray-500">{book.yearPublished}</p>
-        </div>
-        <p className="text-gray-600">{book.description}</p>
-      </div>
-    ))}
-  </div>
 
   if (loading) {
     return (
@@ -118,8 +112,15 @@ function Recommendations() {
           {recommendations.map((book, index) => (
             <div key={index} className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
               <h3 className="text-xl font-bold text-gray-900 mb-2">{book.title}</h3>
-              <p className="text-sm text-indigo-600 mb-4">by {book.author}</p>
-              <p className="text-gray-600">{book.description}</p>
+              <div className="flex items-center space-x-2 mb-4">
+                <p className="text-sm text-indigo-600">by {book.author}</p>
+                <span className="text-gray-400">•</span>
+                <p className="text-sm text-gray-500">{book.genre}</p>
+                <span className="text-gray-400">•</span>
+                <p className="text-sm text-gray-500">{book.yearPublished}</p>
+              </div>
+              <p className="text-gray-600 mb-4">{book.description}</p>
+              <p className="text-sm text-indigo-500 italic">Recommended by: {book.recommendedBy}</p>
             </div>
           ))}
         </div>
