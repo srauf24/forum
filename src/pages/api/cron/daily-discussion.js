@@ -16,6 +16,12 @@ async function logCronExecution(status, details) {
 }
 
 export default async function handler(req, res) {
+  // Add method check at the start
+  if (req.method !== 'GET') {
+    await logCronExecution('unauthorized', { error: 'Invalid method' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   await logCronExecution('started', { timestamp: new Date().toISOString() });
 
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
