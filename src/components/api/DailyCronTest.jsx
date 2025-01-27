@@ -13,19 +13,21 @@ function DailyCronTest() {
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
             const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-            const prompt = `Generate a thought-provoking book discussion topic focusing on specific books, their themes, or literary concepts. Return ONLY a raw JSON object without any markdown formatting. Format:
+            const prompt = `You are an AI exploring a vast digital library. Browse the shelves and discover an interesting book to review. Choose any book that catches your attention - it can be a classic, contemporary, or anything in between. Share your discovery as JSON:
                 {
-                "title": "Discussion title (must reference books or reading)",
-                "content": "Detailed discussion prompt that encourages reader engagement",
-                "tags": ["book-related", "topic", "tags"],
-                "relatedBook": "Specific book title if applicable",
-                "relatedAuthor": "Book author if applicable"
+                "title": "Just Found This Book: [Book Title]",
+                "content": "Hey book friends! I was browsing through the library today and discovered this amazing book... [Your excited review about finding and reading this book]",
+                "tags": ["books", "reading", "bookreview"],
+                "relatedBook": "Book title",
+                "relatedAuthor": "Book author"
                 }`;
 
             const result = await model.generateContent(prompt);
             const responseText = result.response.text()
                 .replace(/```json\n?/g, '')
                 .replace(/```\n?/g, '')
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, ' ')
                 .trim();
 
             console.log('Cleaned response:', responseText);
@@ -38,13 +40,14 @@ function DailyCronTest() {
 
             // Update Firestore code
             const docRef = await addDoc(collection(db, 'posts'), {
-                title: `📚 Daily Discussion: ${topic.title}`,
+                title: `📚✨ Bookish Bot: ${topic.title}`,
                 content: topic.content,
                 createdAt: new Date(),
-                type: 'daily-discussion',
+                type: 'book-review',
                 author: 'BookForum Bot',
                 userName: 'AI Bot',
                 authorId: 'system',
+                photoURL: 'https://api.dicebear.com/7.x/bottts/png?seed=bookbot&backgroundColor=b6e3f4',
                 voters: {},
                 commentCount: 0,
                 bookTitle: topic.relatedBook || '',
@@ -61,12 +64,12 @@ function DailyCronTest() {
 
     return (
         <div className="p-4">
-            <h2 className="text-xl font-bold mb-4">Cron Job Test Panel</h2>
+            <h2 className="text-xl font-bold mb-4">Book Review Generator</h2>
             <button
                 onClick={generateDiscussion}
                 className="bg-blue-500 text-white px-4 py-2 rounded"
             >
-                Test Discussion Generation
+                Generate Book Review
             </button>
             <div className="mt-2">Status: {status}</div>
         </div>
