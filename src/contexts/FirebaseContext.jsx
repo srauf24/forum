@@ -1,18 +1,18 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { db } from '../config/firebase';
-import { 
-  getAuth, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut as firebaseSignOut 
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut as firebaseSignOut
 } from 'firebase/auth';
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  doc, 
-  setDoc, 
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  setDoc,
   serverTimestamp,
   where  // Add this import
 } from 'firebase/firestore';
@@ -53,17 +53,17 @@ export function FirebaseProvider({ children }) {
       let totalInteractions = 0;
       let achievements = [];
       const postsCount = snapshot.size;
-      
+
       if (postsCount >= 10) achievements.push('BOOKWORM');
-      
+
       snapshot.docs.forEach(doc => {
         const post = doc.data();
         const postInteractions = (post.upVotes || 0) + (post.downVotes || 0) + (post.commentCount || 0);
         totalInteractions += postInteractions;
-        
+
         if (postInteractions >= 500) achievements.push('LITERARY_LUMINARY');
       });
-      
+
       if (totalInteractions >= 1000) achievements.push('INFLUENCER');
 
       setStats(prev => ({
@@ -135,7 +135,7 @@ export function FirebaseProvider({ children }) {
   const calculateLevel = (interactions) => {
     return Math.floor(Math.sqrt(interactions / 10)) + 1;
   };
-  
+
   const calculateProgress = (interactions) => {
     const currentLevel = calculateLevel(interactions);
     const nextLevelPoints = (currentLevel * currentLevel) * 10;
@@ -164,11 +164,11 @@ export function FirebaseProvider({ children }) {
   }, [db]);
 
   return (
-    <FirebaseContext.Provider value={{ 
-      db, 
-      user, 
-      signIn, 
-      signOut, 
+    <FirebaseContext.Provider value={{
+      db,
+      user,
+      signIn,
+      signOut,
       loading,
       calculateLevel,
       calculateProgress,
