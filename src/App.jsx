@@ -18,6 +18,18 @@ import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
 <Route path="/progress" element={<Progress />} />
 import { Analytics } from '@vercel/analytics/react';
+// Add import
+import DailyCronTest from './components/api/DailyCronTest';
+
+// Add to Routes
+<Route
+  path="/admin/cron-test"
+  element={
+    <ProtectedRoute>
+      <DailyCronTest />
+    </ProtectedRoute>
+  }
+/>
 function App() {
   return (
     <FirebaseProvider>
@@ -35,31 +47,33 @@ function App() {
                 <Route path="/create-post" element={<CreatePost />} />
                 <Route path="/about" element={<About />} />
                 // Update these routes in your Routes component
-                <Route 
-                  path="/my-stats" 
+                <Route
+                  path="/my-stats"
                   element={
                     <ProtectedRoute>
                       <MyStats />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
                 <Route
-                path="/reading-list"
-                element={
-                  <ProtectedRoute>
-                    <ReadingList />
-                  </ProtectedRoute>
-                }
-              />
-                <Route 
-                  path="/recommendations" 
+                  path="/reading-list"
+                  element={
+                    <ProtectedRoute>
+                      <ReadingList />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recommendations"
                   element={
                     <ProtectedRoute>
                       <Recommendations />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
                 <Route path="/members" element={<MemberList />} />
+                <Route path="/" element={<PostList />} />
+                <Route path="/admin/cron-test" element={<DailyCronTest />} /> {/* Add this route */}
               </Routes>
             </div>
           </main>
