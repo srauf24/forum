@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SignIn from './components/auth/SignIn';
 import Navbar from './components/layout/Navbar';
+import DailyCronTest from './components/cron/DailyCronTest';
 import PostList from './components/posts/PostList';
 import PostDetail from './components/posts/PostDetail';
 import CreatePost from './components/posts/CreatePost';
@@ -16,7 +17,6 @@ import Progress from './components/pages/Progress';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
-<Route path="/progress" element={<Progress />} />
 import { Analytics } from '@vercel/analytics/react';
 // Add import
 import DailyCronTest from './components/api/DailyCronTest';
@@ -46,7 +46,16 @@ function App() {
                 <Route path="/post/:id" element={<PostDetail />} />
                 <Route path="/create-post" element={<CreatePost />} />
                 <Route path="/about" element={<About />} />
-                // Update these routes in your Routes component
+                <Route path="/progress" element={<Progress />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route
+                  path="/admin/cron-test"
+                  element={
+                    <ProtectedRoute>
+                      <DailyCronTest />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/my-stats"
                   element={
