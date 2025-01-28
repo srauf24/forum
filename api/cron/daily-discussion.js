@@ -48,6 +48,11 @@ export default async function handler(req, res) {
     const testDoc = await db.collection('posts').limit(1).get();
     console.log('Firestore connection successful');
 
+    // Add API key validation
+    if (!process.env.VITE_GEMINI_API_KEY) {
+      throw new Error('Gemini API key not found');
+    }
+    console.log('Initializing Gemini API...');
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
@@ -75,7 +80,16 @@ export default async function handler(req, res) {
       .replace(/\r/g, ' ')
       .trim();
 
-    const topic = JSON.parse(responseText);
+    console.log('Raw response:', responseText); // Debug log
+    
+    let topic;
+    try {
+      topic = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Response text:', responseText);
+      throw new Error('Failed to parse AI response');
+    }
 
     // Validate single book/author
     if (Array.isArray(topic.relatedBook) || Array.isArray(topic.relatedAuthor)) {
