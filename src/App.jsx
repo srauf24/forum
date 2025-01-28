@@ -31,9 +31,9 @@ import { Analytics } from '@vercel/analytics/react';
 function App() {
   return (
     <FirebaseProvider>
+      <Analytics />
       <Router>
         <SpeedInsights />
-        <Analytics />
         <div className="flex flex-col min-h-screen w-screen">
           <Navbar />
           <main className="flex-1 bg-gray-100">
