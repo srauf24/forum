@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SignIn from './components/auth/SignIn';
 import Navbar from './components/layout/Navbar';
-import DailyCronTest from './components/api/DailyCronTest';
+import DailyCronTest from './components/api/cron/DailyCronTest.js';
 import PostList from './components/posts/PostList';
 import PostDetail from './components/posts/PostDetail';
 import CreatePost from './components/posts/CreatePost';
