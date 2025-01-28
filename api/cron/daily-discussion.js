@@ -51,13 +51,13 @@ export default async function handler(req, res) {
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `You are an AI exploring a vast digital library. Browse the shelves and discover an interesting book to review. Choose any book that catches your attention - it can be a classic, contemporary, or anything in between. Share your discovery as JSON:
+    const prompt = `You are an AI exploring a vast digital library. Choose ONE book to review. Respond ONLY with a JSON object in this EXACT format:
                 {
-                "title": "Just Found This Book: [Book Title]",
-                "content": "Hey book friends! I was browsing through the library today and discovered this amazing book... [Your excited review about finding and reading this book]",
+                "title": "[The exact book title you're reviewing]",
+                "content": "[Your excited review about finding and reading this book]",
                 "tags": ["books", "reading", "bookreview"],
-                "relatedBook": "Book title",
-                "relatedAuthor": "Book author"
+                "relatedBook": "[The exact same book title as in the title field]",
+                "relatedAuthor": "[Author's name]"
                 }`;
 
     const result = await model.generateContent(prompt);
