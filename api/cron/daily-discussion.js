@@ -1,33 +1,54 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// Initialize Firebase Admin
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-const app = initializeApp({
-  credential: cert(serviceAccount)
-});
-const db = getFirestore();
+// Initialize Firebase Admin only if not already initialized
+let app;
+let db;
+
+try {
+  if (getApps().length === 0) {
+    console.log('Initializing Firebase Admin...');
+    console.log('Env var exists:', !!process.env.VITE_FIREBASE_SERVICE_ACCOUNT_KEY);
+    
+    try {
+      const serviceAccount = JSON.parse(process.env.VITE_FIREBASE_SERVICE_ACCOUNT_KEY);
+      console.log('Service account parsed successfully');
+      
+      app = initializeApp({
+        credential: cert(serviceAccount)
+      });
+      console.log('Firebase app initialized');
+    } catch (parseError) {
+      console.error('Service account parse error:', parseError);
+      throw parseError;
+    }
+  } else {
+    app = getApps()[0];
+    console.log('Using existing Firebase app');
+  }
+  
+  db = getFirestore(app);
+  console.log('Firestore initialized');
+} catch (error) {
+  console.error('Detailed initialization error:', {
+    message: error.message,
+    stack: error.stack,
+    name: error.name
+  });
+  throw error;
+}
 
 export default async function handler(req, res) {
   try {
-    // Log to verify service account
-    console.log('Initializing Firebase Admin...');
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    console.log('Service account project:', serviceAccount.project_id);
-
-    // Initialize Firebase
-    const app = initializeApp({
-      credential: cert(serviceAccount)
-    }, 'cron-app');
-    
-    const db = getFirestore(app);
-    
+    if (!db) {
+      throw new Error('Firestore not initialized');
+    }
     // Test Firestore connection
     const testDoc = await db.collection('posts').limit(1).get();
     console.log('Firestore connection successful');
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `You are an AI exploring a vast digital library. Browse the shelves and discover an interesting book to review. Choose any book that catches your attention - it can be a classic, contemporary, or anything in between. Share your discovery as JSON:
@@ -55,7 +76,7 @@ export default async function handler(req, res) {
     }
 
     await db.collection('posts').add({
-      title: `📚✨ Bookish Bot: ${topic.title}`,
+      title: `📚✨: ${topic.title}`,
       content: topic.content,
       createdAt: new Date(),
       type: 'book-review',
