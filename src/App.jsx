@@ -80,7 +80,6 @@ function App() {
                 />
                 <Route path="/members" element={<MemberList />} />
                 <Route path="/" element={<PostList />} />
-                <Route path="/admin/cron-test" element={<DailyCronTest />} /> {/* Add this route */}
               </Routes>
             </div>
           </main>
