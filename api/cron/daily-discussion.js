@@ -51,14 +51,21 @@ export default async function handler(req, res) {
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `You are an AI exploring a vast digital library. Choose ONE book to review. Respond ONLY with a JSON object in this EXACT format:
+    const prompt = `You are a passionate book reviewer sharing your latest read. Choose ONE random book from any genre or time period (avoid The Midnight Library or recently reviewed books). Write an engaging, personal review. Respond ONLY with a JSON object in this EXACT format:
                 {
-                "title": "[The exact book title you're reviewing]",
-                "content": "[Your excited review about finding and reading this book]",
+                "title": "[Book title]",
+                "content": "[Write an enthusiastic, personal review that:
+                           - Starts with 'Hey bookworms! 📚' or similar engaging opener
+                           - Mentions the book and author naturally in the first sentence
+                           - Gives a spoiler-free overview
+                           - Shares your personal connection and feelings
+                           - Includes 2-3 relevant emojis naturally throughout
+                           - Ends with why others should read it]",
                 "tags": ["books", "reading", "bookreview"],
-                "relatedBook": "[The exact same book title as in the title field]",
-                "relatedAuthor": "[Author's name]"
-                }`;
+                "relatedBook": "[Exact book title]",
+                "relatedAuthor": "[Author's full name]"
+                }
+                Important: Choose any book EXCEPT The Midnight Library. Make it feel like a fresh, genuine discovery.`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text()
@@ -76,12 +83,12 @@ export default async function handler(req, res) {
     }
 
     await db.collection('posts').add({
-      title: `📚✨: ${topic.title}`,
+      title: `📚✨ ${topic.title}`,
       content: topic.content,
       createdAt: new Date(),
       type: 'book-review',
       author: 'BookForum Bot',
-      userName: 'AI Bot',
+      userName: 'AI Agent',
       authorId: 'system',
       photoURL: 'https://api.dicebear.com/7.x/bottts/png?seed=bookbot&backgroundColor=b6e3f4',
       voters: {},
