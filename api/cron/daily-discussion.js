@@ -11,6 +11,22 @@ const db = getFirestore();
 
 export default async function handler(req, res) {
   try {
+    // Log to verify service account
+    console.log('Initializing Firebase Admin...');
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    console.log('Service account project:', serviceAccount.project_id);
+
+    // Initialize Firebase
+    const app = initializeApp({
+      credential: cert(serviceAccount)
+    }, 'cron-app');
+    
+    const db = getFirestore(app);
+    
+    // Test Firestore connection
+    const testDoc = await db.collection('posts').limit(1).get();
+    console.log('Firestore connection successful');
+
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 

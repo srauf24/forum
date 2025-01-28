@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SignIn from './components/auth/SignIn';
 import Navbar from './components/layout/Navbar';
-import DailyCronTest from './components/api/cron/DailyCronTest.js';
+import DailyCronTest from './components/cron/DailyCronTest';
 import PostList from './components/posts/PostList';
 import PostDetail from './components/posts/PostDetail';
 import CreatePost from './components/posts/CreatePost';
@@ -17,7 +17,6 @@ import Progress from './components/pages/Progress';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
-import { Analytics } from '@vercel/analytics/react';
 // Add import
 // Add to Routes
 <Route
@@ -31,7 +30,6 @@ import { Analytics } from '@vercel/analytics/react';
 function App() {
   return (
     <FirebaseProvider>
-      <Analytics />
       <Router>
         <SpeedInsights />
         <div className="flex flex-col min-h-screen w-screen">
