@@ -19,8 +19,6 @@ import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
 import { Analytics } from '@vercel/analytics/react';
 // Add import
-import DailyCronTest from './components/api/DailyCronTest';
-
 // Add to Routes
 <Route
   path="/admin/cron-test"
