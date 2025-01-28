@@ -14,7 +14,14 @@ export default async function handler(req, res) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `You are an AI exploring a vast digital library...`; // Same prompt as DailyCronTest
+    const prompt = `You are an AI exploring a vast digital library. Browse the shelves and discover an interesting book to review. Choose any book that catches your attention - it can be a classic, contemporary, or anything in between. Share your discovery as JSON:
+                {
+                "title": "Just Found This Book: [Book Title]",
+                "content": "Hey book friends! I was browsing through the library today and discovered this amazing book... [Your excited review about finding and reading this book]",
+                "tags": ["books", "reading", "bookreview"],
+                "relatedBook": "Book title",
+                "relatedAuthor": "Book author"
+                }`;
 
     const result = await model.generateContent(prompt);
     const responseText = result.response.text()
@@ -26,7 +33,11 @@ export default async function handler(req, res) {
 
     const topic = JSON.parse(responseText);
 
-    // Add to Firestore using admin SDK
+    // Validate single book/author
+    if (Array.isArray(topic.relatedBook) || Array.isArray(topic.relatedAuthor)) {
+      throw new Error('Response must contain a single book and author');
+    }
+
     await db.collection('posts').add({
       title: `📚✨ Bookish Bot: ${topic.title}`,
       content: topic.content,
