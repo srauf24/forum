@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SignIn from './components/auth/SignIn';
 import Navbar from './components/layout/Navbar';
-import DailyCronTest from './components/cron/DailyCronTest';
 import PostList from './components/posts/PostList';
 import PostDetail from './components/posts/PostDetail';
 import CreatePost from './components/posts/CreatePost';
@@ -35,49 +34,76 @@ function App() {
         <div className="flex flex-col min-h-screen w-screen">
           <Navbar />
           <main className="flex-1 bg-gray-100">
-            <div className="w-full max-w-7xl mx-auto px-4 py-8">
+            <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
               <Routes>
-                <Route path="/" element={<PostList />} />
-                <Route path="/books" element={<BooksList />} />
-                <Route path="/post/:id" element={<PostDetail />} />
-                <Route path="/create-post" element={<CreatePost />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/progress" element={<Progress />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route
-                  path="/admin/cron-test"
-                  element={
-                    <ProtectedRoute>
+                <Route path="/" element={
+                  <div className="max-w-full sm:max-w-3xl mx-auto">
+                    <PostList />
+                  </div>
+                } />
+                <Route path="/books" element={
+                  <div className="max-w-full sm:max-w-4xl mx-auto">
+                    <BooksList />
+                  </div>
+                } />
+                <Route path="/post/:id" element={
+                  <div className="max-w-full sm:max-w-2xl mx-auto">
+                    <PostDetail />
+                  </div>
+                } />
+                <Route path="/create-post" element={
+                  <div className="max-w-full sm:max-w-2xl mx-auto">
+                    <CreatePost />
+                  </div>
+                } />
+                <Route path="/about" element={
+                  <div className="max-w-full sm:max-w-3xl mx-auto">
+                    <About />
+                  </div>
+                } />
+                <Route path="/progress" element={
+                  <div className="max-w-full sm:max-w-2xl mx-auto">
+                    <Progress />
+                  </div>
+                } />
+                <Route path="/signin" element={
+                  <div className="max-w-full sm:max-w-md mx-auto">
+                    <SignIn />
+                  </div>
+                } />
+                <Route path="/admin/cron-test" element={
+                  <ProtectedRoute>
+                    <div className="max-w-full sm:max-w-2xl mx-auto">
                       <DailyCronTest />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/my-stats"
-                  element={
-                    <ProtectedRoute>
+                    </div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/my-stats" element={
+                  <ProtectedRoute>
+                    <div className="max-w-full sm:max-w-2xl mx-auto">
                       <MyStats />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/reading-list"
-                  element={
-                    <ProtectedRoute>
+                    </div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/reading-list" element={
+                  <ProtectedRoute>
+                    <div className="max-w-full sm:max-w-3xl mx-auto">
                       <ReadingList />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/recommendations"
-                  element={
-                    <ProtectedRoute>
+                    </div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/recommendations" element={
+                  <ProtectedRoute>
+                    <div className="max-w-full sm:max-w-3xl mx-auto">
                       <Recommendations />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/members" element={<MemberList />} />
-                <Route path="/" element={<PostList />} />
+                    </div>
+                  </ProtectedRoute>
+                } />
+                <Route path="/members" element={
+                  <div className="max-w-full sm:max-w-4xl mx-auto">
+                    <MemberList />
+                  </div>
+                } />
               </Routes>
             </div>
           </main>
