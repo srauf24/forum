@@ -146,24 +146,24 @@ function MemberList() {
             </div>
 
             {/* Member Stats */}
-            <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4 pt-4 border-t border-gray-100">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-lg sm:text-2xl font-bold text-gray-900">
                   {member.posts}
                 </div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Posts</div>
+                <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide">Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-indigo-600">
+                <div className="text-lg sm:text-2xl font-bold text-indigo-600">
                   {member.interactions}
                 </div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Interactions</div>
+                <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide">Interactions</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-amber-600">
+                <div className="text-lg sm:text-2xl font-bold text-amber-600">
                   {member.achievements?.length}
                 </div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide">Badges</div>
+                <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide">Badges</div>
               </div>
             </div>
 
