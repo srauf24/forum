@@ -7,6 +7,6 @@
   ],
   "crons": [{
     "path": "/api/cron/daily-discussion",
-    "schedule": "0 11 * * *"  
+    "schedule": "0 6 * * *"  
   }]
 }

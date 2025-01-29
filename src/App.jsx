@@ -17,15 +17,6 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
 // Add import
-// Add to Routes
-<Route
-  path="/admin/cron-test"
-  element={
-    <ProtectedRoute>
-      <DailyCronTest />
-    </ProtectedRoute>
-  }
-/>
 function App() {
   return (
     <FirebaseProvider>
@@ -70,13 +61,6 @@ function App() {
                   <div className="max-w-full sm:max-w-md mx-auto">
                     <SignIn />
                   </div>
-                } />
-                <Route path="/admin/cron-test" element={
-                  <ProtectedRoute>
-                    <div className="max-w-full sm:max-w-2xl mx-auto">
-                      <DailyCronTest />
-                    </div>
-                  </ProtectedRoute>
                 } />
                 <Route path="/my-stats" element={
                   <ProtectedRoute>

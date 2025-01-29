@@ -110,7 +110,7 @@ export default async function handler(req, res) {
       bookTitle: topic.relatedBook || '',
       bookAuthor: topic.relatedAuthor || ''
     });
-
+    console.log('Daily discussion created successfully')
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('Cron job failed:', error);
