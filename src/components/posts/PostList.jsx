@@ -18,9 +18,6 @@ import {
   startAfter 
 } from 'firebase/firestore';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
-// Add these imports at the top
-import { BiShareAlt, BiCopy } from 'react-icons/bi';
-import { FaTwitter, FaFacebook } from 'react-icons/fa';
 
 // Add this function inside PostList component
 const handleShare = async (post, platform) => {

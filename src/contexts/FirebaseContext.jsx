@@ -99,7 +99,10 @@ export function FirebaseProvider({ children }) {
   }, [user, db]);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const auth = getAuth();
+    setPersistence(auth, browserLocalPersistence);
+    
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
