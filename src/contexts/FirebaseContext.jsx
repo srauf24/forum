@@ -4,8 +4,12 @@ import {
   getAuth,
   signInWithPopup,
   GoogleAuthProvider,
-  signOut as firebaseSignOut
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
+
 import {
   collection,
   query,
@@ -100,14 +104,17 @@ export function FirebaseProvider({ children }) {
 
   useEffect(() => {
     const auth = getAuth();
-    setPersistence(auth, browserLocalPersistence);
-    
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          setUser(user);
+          setLoading(false);
+        });
+        return () => unsubscribe();
+      })
+      .catch((error) => {
+        console.error("Error setting persistence:", error);
+      });
   }, []);
 
   const signIn = async () => {

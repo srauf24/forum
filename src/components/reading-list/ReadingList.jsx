@@ -297,8 +297,8 @@ function ReadingList() {
                 ></div>
               </div>
 
-              {/* Current progress */}
-              <div className="flex justify-between items-center text-sm">
+              {/* Current progress - make it mobile responsive */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm gap-3 sm:gap-0">
                 <div className="flex items-center gap-3">
                   <span className="text-gray-600">Page</span>
                   <input
@@ -325,7 +325,7 @@ function ReadingList() {
                         );
                       });
                     }}
-                    className="w-20 px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     min="0"
                     max={book.progress.totalPages}
                   />
@@ -336,8 +336,8 @@ function ReadingList() {
                 </span>
               </div>
 
-              {/* Reading goal */}
-              <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-200">
+              {/* Reading goal - make it mobile responsive */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm pt-2 border-t border-gray-200 gap-3 sm:gap-0">
                 <div className="flex items-center gap-3">
                   <span className="text-gray-600">Daily Goal:</span>
                   <input
@@ -369,7 +369,7 @@ function ReadingList() {
                         );
                       });
                     }}
-                    className="w-20 px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     min="1"
                   />
                   <span className="text-gray-600">pages per day</span>
@@ -379,8 +379,8 @@ function ReadingList() {
                 </span>
               </div>
 
-              {/* Milestone projections */}
-              <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+              {/* Milestone projections - make it mobile responsive */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 pt-4 border-t border-gray-200">
                 {[25, 50, 75, 100].map(milestone => {
                   const targetPage = Math.ceil((book.progress.totalPages * milestone) / 100);
                   const remainingPagesToMilestone = targetPage - book.progress.currentPage;
@@ -391,19 +391,19 @@ function ReadingList() {
                   return (
                     <div 
                       key={milestone} 
-                      className={`p-4 rounded-xl ${
+                      className={`p-3 sm:p-4 rounded-xl text-center ${
                         book.progress.currentPage >= targetPage 
                           ? 'bg-indigo-50 border border-indigo-100' 
                           : 'bg-white border border-gray-100 shadow-sm'
                       }`}
                     >
-                      <div className={`text-lg font-semibold ${
+                      <div className={`text-base sm:text-lg font-semibold ${
                         book.progress.currentPage >= targetPage 
                           ? 'text-indigo-600' 
                           : 'text-gray-700'
                       }`}>{milestone}%</div>
-                      <div className="text-sm text-gray-500 mt-1">Page {targetPage}</div>
-                      <div className="text-sm text-gray-500 mt-1">{milestoneDate.toLocaleDateString()}</div>
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1">Page {targetPage}</div>
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1">{milestoneDate.toLocaleDateString()}</div>
                     </div>
                   );
                 })}
