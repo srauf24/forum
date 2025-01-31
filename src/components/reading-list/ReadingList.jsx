@@ -24,6 +24,7 @@ function ReadingList() {
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, book: null });
   // Update the initial state first
   const [newBook, setNewBook] = useState({
     title: '',
@@ -277,8 +278,8 @@ function ReadingList() {
               </div>
             </div>
             <button
-              onClick={() => removeFromList(book)}
-              className="text-red-500 hover:text-red-700"
+              onClick={() => setDeleteConfirmation({ show: true, book: book })}
+              className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -411,6 +412,33 @@ function ReadingList() {
           )}
         </div>
       ))}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
+            <p className="text-gray-500 mb-6">
+              Are you sure you want to remove "{deleteConfirmation.book?.title}" from your reading list?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirmation({ show: false, book: null })}
+                className="px-4 py-2 text-gray-500 hover:text-gray-700 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  removeFromList(deleteConfirmation.book);
+                  setDeleteConfirmation({ show: false, book: null });
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
