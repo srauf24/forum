@@ -249,8 +249,8 @@ function ReadingList() {
                   className="w-full text-2xl font-bold text-gray-900 leading-tight bg-transparent hover:bg-gray-50 px-2 py-1 rounded-md focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none min-w-0"
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
-                <span className="font-medium text-indigo-600">by</span>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-sm font-medium text-gray-500">by</span>
                 <input
                   type="text"
                   value={book.author}
@@ -270,10 +270,10 @@ function ReadingList() {
                       );
                     });
                   }}
-                  className="font-medium text-indigo-600 bg-transparent hover:bg-gray-50 px-2 py-1 rounded-md focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="text-base font-medium text-indigo-600 bg-transparent hover:bg-gray-50 px-3 py-1.5 rounded-md focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
-                <span className="text-gray-600 font-medium">{book.genre}</span>
+                <span className="w-1 h-1 rounded-full bg-gray-300 mx-2"></span>
+                <span className="text-sm font-medium text-gray-500">{book.genre}</span>
               </div>
             </div>
             <button
@@ -287,16 +287,19 @@ function ReadingList() {
           </div>
 
           {book.progress && (
-            <div className="mt-4 mb-6 p-4 bg-gray-50 rounded-xl">
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-4 mb-6 p-6 bg-gray-50 rounded-xl space-y-4">
+              {/* Progress bar */}
+              <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
-                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-3 rounded-full transition-all duration-300"
                   style={{ width: `${(book.progress.currentPage / book.progress.totalPages) * 100}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
-                <div className="flex items-center gap-2">
-                  <span>Page</span>
+
+              {/* Current progress */}
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-600">Page</span>
                   <input
                     type="number"
                     value={book.progress.currentPage}
@@ -321,17 +324,21 @@ function ReadingList() {
                         );
                       });
                     }}
-                    className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
+                    className="w-20 px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     min="0"
                     max={book.progress.totalPages}
                   />
-                  <span>of {book.progress.totalPages}</span>
+                  <span className="text-gray-600">of {book.progress.totalPages}</span>
                 </div>
-                <span>{Math.round((book.progress.currentPage / book.progress.totalPages) * 100)}% Complete</span>
+                <span className="font-medium text-indigo-600">
+                  {Math.round((book.progress.currentPage / book.progress.totalPages) * 100)}% Complete
+                </span>
               </div>
-              <div className="mt-3 text-sm text-gray-600 flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span>Daily Goal:</span>
+
+              {/* Reading goal */}
+              <div className="flex justify-between items-center text-sm pt-2 border-t border-gray-200">
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-600">Daily Goal:</span>
                   <input
                     type="number"
                     value={book.progress.pagesPerDay}
@@ -361,12 +368,44 @@ function ReadingList() {
                         );
                       });
                     }}
-                    className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
+                    className="w-20 px-3 py-1.5 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     min="1"
                   />
-                  <span>pages</span>
+                  <span className="text-gray-600">pages per day</span>
                 </div>
-                <p>Finish by: {new Date(book.progress.estimatedFinishDate).toLocaleDateString()}</p>
+                <span className="text-gray-600">
+                  Finish by: {new Date(book.progress.estimatedFinishDate).toLocaleDateString()}
+                </span>
+              </div>
+
+              {/* Milestone projections */}
+              <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+                {[25, 50, 75, 100].map(milestone => {
+                  const targetPage = Math.ceil((book.progress.totalPages * milestone) / 100);
+                  const remainingPagesToMilestone = targetPage - book.progress.currentPage;
+                  const daysToMilestone = Math.ceil(remainingPagesToMilestone / book.progress.pagesPerDay);
+                  const milestoneDate = new Date();
+                  milestoneDate.setDate(milestoneDate.getDate() + Math.max(0, daysToMilestone));
+
+                  return (
+                    <div 
+                      key={milestone} 
+                      className={`p-4 rounded-xl ${
+                        book.progress.currentPage >= targetPage 
+                          ? 'bg-indigo-50 border border-indigo-100' 
+                          : 'bg-white border border-gray-100 shadow-sm'
+                      }`}
+                    >
+                      <div className={`text-lg font-semibold ${
+                        book.progress.currentPage >= targetPage 
+                          ? 'text-indigo-600' 
+                          : 'text-gray-700'
+                      }`}>{milestone}%</div>
+                      <div className="text-sm text-gray-500 mt-1">Page {targetPage}</div>
+                      <div className="text-sm text-gray-500 mt-1">{milestoneDate.toLocaleDateString()}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
