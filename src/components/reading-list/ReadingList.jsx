@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import AddBookForm from './AddBookForm';
 
 // Export the add function
 export const addToReadingList = async (db, userId, book) => {
@@ -21,15 +22,22 @@ function ReadingList() {
   const [readingList, setReadingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [newBook, setNewBook] = useState({ title: '', author: '' });
+  // Update the initial state first
+  const [newBook, setNewBook] = useState({
+    title: '',
+    author: '',
+    totalPages: '',
+    currentPage: '0',
+    pagesPerDay: ''
+  });
 
   useEffect(() => {
     const fetchReadingList = async () => {
       if (!user) return;
-      
+
       const userRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userRef);
-      
+
       if (userDoc.exists() && userDoc.data().readingList) {
         setReadingList(userDoc.data().readingList);
       }
@@ -70,16 +78,34 @@ function ReadingList() {
     e.preventDefault();
     if (!newBook.title || !newBook.author) return;
 
+    const today = new Date();
+    const daysToFinish = Math.ceil((newBook.totalPages - newBook.currentPage) / (newBook.pagesPerDay || 1));
+    const finishDate = new Date(today.setDate(today.getDate() + daysToFinish));
+
     const book = {
       ...newBook,
       description: `Manually added book: ${newBook.title} by ${newBook.author}`,
-      genre: 'Unspecified'
+      genre: 'Unspecified',
+      progress: {
+        totalPages: parseInt(newBook.totalPages) || 0,
+        currentPage: parseInt(newBook.currentPage) || 0,
+        pagesPerDay: parseInt(newBook.pagesPerDay) || 0,
+        startDate: new Date().toISOString(),
+        estimatedFinishDate: finishDate.toISOString()
+      }
     };
 
     const success = await addToReadingList(db, user.uid, book);
     if (success) {
       setReadingList(current => [...current, book]);
-      setNewBook({ title: '', author: '' });
+      setNewBook({
+        title: '',
+        author: '',
+        totalPages: '',
+        currentPage: '0',
+        pagesPerDay: '',
+        readingFrequency: 'daily'
+      });
       setShowForm(false);
     }
   };
@@ -106,10 +132,10 @@ function ReadingList() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAddBook} className="mb-8 bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <form onSubmit={handleAddBook} className="mb-8 bg-white rounded-lg p-6 shadow-md">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
                 Book Title
               </label>
               <input
@@ -117,14 +143,13 @@ function ReadingList() {
                 id="title"
                 value={newBook.title}
                 onChange={(e) => setNewBook(prev => ({ ...prev, title: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 
-                  focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-200"
-                placeholder="Enter book title..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Enter book title"
                 required
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="author" className="block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="author" className="block text-sm font-medium text-gray-700 mb-1">
                 Author
               </label>
               <input
@@ -132,68 +157,102 @@ function ReadingList() {
                 id="author"
                 value={newBook.author}
                 onChange={(e) => setNewBook(prev => ({ ...prev, author: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 
-                  focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all duration-200"
-                placeholder="Enter author name..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Enter author name"
                 required
+              />
+            </div>
+            <div>
+              <label htmlFor="totalPages" className="block text-sm font-medium text-gray-700 mb-1">
+                Total Pages
+              </label>
+              <input
+                type="number"
+                id="totalPages"
+                value={newBook.totalPages}
+                onChange={(e) => setNewBook(prev => ({ ...prev, totalPages: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Enter total pages"
+                required
+                min="1"
+              />
+            </div>
+            <div>
+              <label htmlFor="currentPage" className="block text-sm font-medium text-gray-700 mb-1">
+                Current Page
+              </label>
+              <input
+                type="number"
+                id="currentPage"
+                value={newBook.currentPage}
+                onChange={(e) => setNewBook(prev => ({ ...prev, currentPage: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Enter current page"
+                required
+                min="0"
+                max={newBook.totalPages}
+              />
+            </div>
+            <div>
+              <label htmlFor="pagesPerDay" className="block text-sm font-medium text-gray-700 mb-1">
+                Pages Per Day
+              </label>
+              <input
+                type="number"
+                id="pagesPerDay"
+                value={newBook.pagesPerDay}
+                onChange={(e) => setNewBook(prev => ({ ...prev, pagesPerDay: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Enter pages per day"
+                required
+                min="1"
               />
             </div>
           </div>
           <button
             type="submit"
-            className="mt-8 px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white 
-              rounded-full hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 
-              shadow-lg hover:shadow-xl text-sm font-medium transform hover:scale-105"
+            className="mt-4 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
           >
-            Add to Collection
+            Add Book
           </button>
         </form>
       )}
 
-      {readingList.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
-          <h3 className="text-2xl font-light text-gray-800 mb-4">
-            Begin Your Reading Journey
+      {/* Update the book card display */}
+      {readingList.map((book, index) => (
+        <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 
+          border border-gray-100 hover:border-indigo-100 transform hover:-translate-y-1">
+          <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+            {book.title}
           </h3>
-          <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
-            Start curating your personal collection of literary masterpieces
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {readingList.map((book, index) => (
-            <div 
-              key={index}
-              className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 
-                border border-gray-100 hover:border-indigo-100 transform hover:-translate-y-1"
-            >
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
-                {book.title}
-              </h3>
-              <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
-                <span className="font-medium text-indigo-600">by {book.author}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
-                <span className="text-gray-600 font-medium">{book.genre}</span>
+          <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
+            <span className="font-medium text-indigo-600">by {book.author}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
+            <span className="text-gray-600 font-medium">{book.genre}</span>
+          </div>
+
+          {book.progress && (
+            <div className="mt-4 mb-6 p-4 bg-gray-50 rounded-xl">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(book.progress.currentPage / book.progress.totalPages) * 100}%` }}
+                ></div>
               </div>
-              <p className="text-gray-600 leading-relaxed mb-6 italic">
-                {book.description}
-              </p>
-              <button
-                onClick={() => removeFromList(book)}
-                className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2
-                  transition-colors duration-200 group"
-              >
-                <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" 
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Remove from collection
-              </button>
+              <div className="flex justify-between text-sm text-gray-600 mt-2">
+                <span>Page {book.progress.currentPage} of {book.progress.totalPages}</span>
+                <span>{Math.round((book.progress.currentPage / book.progress.totalPages) * 100)}% Complete</span>
+              </div>
+              <div className="mt-3 text-sm text-gray-600">
+                <p>Daily Goal: {book.progress.pagesPerDay} pages</p>
+                <p>Estimated finish date: {new Date(book.progress.estimatedFinishDate).toLocaleDateString()}</p>
+              </div>
             </div>
-          ))}
+          )}
+
+          {/* Existing description and remove button */}
         </div>
-      )}
+      ))}
     </div>
   );
 }
