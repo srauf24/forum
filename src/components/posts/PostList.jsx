@@ -316,7 +316,7 @@ function PostList() {
                   <p className="text-gray-600 leading-relaxed mb-6">{post.content}</p>
                 </Link>
 
-                <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-gray-100 gap-4 sm:gap-0">
                   <div className="flex items-center space-x-8">
                     <span className="text-sm text-gray-600">{post.userName}</span>
                     <div className="flex items-center space-x-6">
@@ -324,7 +324,7 @@ function PostList() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleVote(post.id, post.voters, 'up', post); // Add post as the fourth parameter
+                          handleVote(post.id, post.voters, 'up', post);
                         }}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
@@ -340,7 +340,7 @@ function PostList() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleVote(post.id, post.voters, 'down', post); // Add post as the fourth parameter
+                          handleVote(post.id, post.voters, 'down', post);
                         }}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
