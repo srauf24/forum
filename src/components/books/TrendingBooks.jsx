@@ -12,7 +12,7 @@ function TrendingBooks() {
     const booksQuery = query(
       collection(db, 'posts'),
       orderBy('interactions', 'desc'),
-      limit(3) // Reduce initial load
+      limit(10) // Reduce initial load
     );
 
     const unsubscribe = onSnapshot(booksQuery, {
