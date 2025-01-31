@@ -25,7 +25,7 @@ function MemberList() {
     const usersQuery = query(
       collection(db, 'users'),
       orderBy('lastSeen', 'desc'),
-      limit(6)
+      //limit(6)
     );
 
     const unsubscribe = onSnapshot(usersQuery, async (snapshot) => {
