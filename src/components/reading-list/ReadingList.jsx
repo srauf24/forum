@@ -22,6 +22,8 @@ function ReadingList() {
   const [readingList, setReadingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingBook, setEditingBook] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   // Update the initial state first
   const [newBook, setNewBook] = useState({
     title: '',
@@ -221,14 +223,67 @@ function ReadingList() {
       {/* Update the book card display */}
       {readingList.map((book, index) => (
         <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 
-          border border-gray-100 hover:border-indigo-100 transform hover:-translate-y-1">
-          <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
-            {book.title}
-          </h3>
-          <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
-            <span className="font-medium text-indigo-600">by {book.author}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
-            <span className="text-gray-600 font-medium">{book.genre}</span>
+          border border-gray-100 hover:border-indigo-100 transform hover:-translate-y-1 mb-6">
+          <div className="flex justify-between items-start">
+            <div className="flex-grow min-w-0">
+              <div className="flex items-center mb-3 w-full">
+                <input
+                  type="text"
+                  value={book.title}
+                  onChange={(e) => {
+                    const updatedBook = {
+                      ...book,
+                      title: e.target.value
+                    };
+                    updateDoc(doc(db, 'users', user.uid), {
+                      readingList: arrayRemove(book)
+                    }).then(() => {
+                      updateDoc(doc(db, 'users', user.uid), {
+                        readingList: arrayUnion(updatedBook)
+                      });
+                      setReadingList(current =>
+                        current.map(b => b.title === book.title ? updatedBook : b)
+                      );
+                    });
+                  }}
+                  className="w-full text-2xl font-bold text-gray-900 leading-tight bg-transparent hover:bg-gray-50 px-2 py-1 rounded-md focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none min-w-0"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-3 mb-6 text-sm">
+                <span className="font-medium text-indigo-600">by</span>
+                <input
+                  type="text"
+                  value={book.author}
+                  onChange={(e) => {
+                    const updatedBook = {
+                      ...book,
+                      author: e.target.value
+                    };
+                    updateDoc(doc(db, 'users', user.uid), {
+                      readingList: arrayRemove(book)
+                    }).then(() => {
+                      updateDoc(doc(db, 'users', user.uid), {
+                        readingList: arrayUnion(updatedBook)
+                      });
+                      setReadingList(current =>
+                        current.map(b => b.title === book.title ? updatedBook : b)
+                      );
+                    });
+                  }}
+                  className="font-medium text-indigo-600 bg-transparent hover:bg-gray-50 px-2 py-1 rounded-md focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-200"></span>
+                <span className="text-gray-600 font-medium">{book.genre}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => removeFromList(book)}
+              className="text-red-500 hover:text-red-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </button>
           </div>
 
           {book.progress && (
@@ -239,18 +294,82 @@ function ReadingList() {
                   style={{ width: `${(book.progress.currentPage / book.progress.totalPages) * 100}%` }}
                 ></div>
               </div>
-              <div className="flex justify-between text-sm text-gray-600 mt-2">
-                <span>Page {book.progress.currentPage} of {book.progress.totalPages}</span>
+              <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
+                <div className="flex items-center gap-2">
+                  <span>Page</span>
+                  <input
+                    type="number"
+                    value={book.progress.currentPage}
+                    onChange={(e) => {
+                      const newPage = Math.min(Math.max(0, parseInt(e.target.value) || 0), book.progress.totalPages);
+                      const updatedBook = {
+                        ...book,
+                        progress: {
+                          ...book.progress,
+                          currentPage: newPage
+                        }
+                      };
+                      // Update in Firebase and local state
+                      updateDoc(doc(db, 'users', user.uid), {
+                        readingList: arrayRemove(book)
+                      }).then(() => {
+                        updateDoc(doc(db, 'users', user.uid), {
+                          readingList: arrayUnion(updatedBook)
+                        });
+                        setReadingList(current =>
+                          current.map(b => b.title === book.title ? updatedBook : b)
+                        );
+                      });
+                    }}
+                    className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
+                    min="0"
+                    max={book.progress.totalPages}
+                  />
+                  <span>of {book.progress.totalPages}</span>
+                </div>
                 <span>{Math.round((book.progress.currentPage / book.progress.totalPages) * 100)}% Complete</span>
               </div>
-              <div className="mt-3 text-sm text-gray-600">
-                <p>Daily Goal: {book.progress.pagesPerDay} pages</p>
-                <p>Estimated finish date: {new Date(book.progress.estimatedFinishDate).toLocaleDateString()}</p>
+              <div className="mt-3 text-sm text-gray-600 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span>Daily Goal:</span>
+                  <input
+                    type="number"
+                    value={book.progress.pagesPerDay}
+                    onChange={(e) => {
+                      const newPagesPerDay = Math.max(1, parseInt(e.target.value) || 1);
+                      const today = new Date();
+                      const daysToFinish = Math.ceil((book.progress.totalPages - book.progress.currentPage) / newPagesPerDay);
+                      const finishDate = new Date(today.setDate(today.getDate() + daysToFinish));
+
+                      const updatedBook = {
+                        ...book,
+                        progress: {
+                          ...book.progress,
+                          pagesPerDay: newPagesPerDay,
+                          estimatedFinishDate: finishDate.toISOString()
+                        }
+                      };
+                      // Update in Firebase and local state
+                      updateDoc(doc(db, 'users', user.uid), {
+                        readingList: arrayRemove(book)
+                      }).then(() => {
+                        updateDoc(doc(db, 'users', user.uid), {
+                          readingList: arrayUnion(updatedBook)
+                        });
+                        setReadingList(current =>
+                          current.map(b => b.title === book.title ? updatedBook : b)
+                        );
+                      });
+                    }}
+                    className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
+                    min="1"
+                  />
+                  <span>pages</span>
+                </div>
+                <p>Finish by: {new Date(book.progress.estimatedFinishDate).toLocaleDateString()}</p>
               </div>
             </div>
           )}
-
-          {/* Existing description and remove button */}
         </div>
       ))}
     </div>
