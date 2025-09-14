@@ -74,7 +74,6 @@ function Recommendations() {
       return JSON.parse(cleanedResponse);
     } catch (error) {
       console.error('Error getting recommendations:', error);
-      console.log('Raw response:', response?.text());
       return [];
     }
   };
