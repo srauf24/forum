@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore';
+
 function CommentForm({ postId }) {
   const { db } = useFirebase();
   const [content, setContent] = useState('');
@@ -55,5 +57,9 @@ function CommentForm({ postId }) {
     </form>
   );
 }
+
+CommentForm.propTypes = {
+  postId: PropTypes.string.isRequired,
+};
 
 export default CommentForm;

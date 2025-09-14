@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
@@ -50,5 +51,9 @@ function CommentList({ postId }) {
     </div>
   );
 }
+
+CommentList.propTypes = {
+  postId: PropTypes.string.isRequired,
+};
 
 export default CommentList;

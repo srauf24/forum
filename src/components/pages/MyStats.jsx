@@ -1,8 +1,5 @@
 import { useFirebase } from '../../contexts/FirebaseContext';
-import UserStats from '../user/UserStats';
-import { Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+
 
 function MyStats() {
   const { user, badges, stats } = useFirebase();

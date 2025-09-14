@@ -17,10 +17,13 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Recommendations from './components/recommendations/Recommendations';
 import { SpeedInsights } from "@vercel/speed-insights/react";// In your Routes component
 // Add import
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <FirebaseProvider>
       <Router>
+        <Toaster />
         <SpeedInsights />
         <div className="flex flex-col min-h-screen w-screen">
           <Navbar />

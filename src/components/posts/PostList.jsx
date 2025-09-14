@@ -1,196 +1,15 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  doc, 
-  updateDoc, 
-  increment, 
-  limit, 
-  writeBatch, 
-  deleteField,
-  serverTimestamp,
-  where,  // Added this import
-  getDocs, 
-  startAfter 
-} from 'firebase/firestore';
+import { usePosts } from '../../hooks/usePosts';
+import { useVoting } from '../../hooks/useVoting';
 import { BiSolidLike, BiLike, BiSolidDislike, BiDislike, BiComment } from 'react-icons/bi';
 
-// Add this function inside PostList component
-const handleShare = async (post, platform) => {
-  const baseUrl = "https://bookclub-khaki.vercel.app";
-  const postUrl = `${baseUrl}/post/${post.id}`;
-  const text = `Check out this discussion about "${post.bookTitle}" on BookForum`;
-  
-  switch (platform) {
-    case 'twitter':
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(postUrl)}`);
-      break;
-    case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`);
-      break;
-    case 'copy':
-      await navigator.clipboard.writeText(postUrl);
-      // You could add a toast notification here
-      alert('Link copied to clipboard!');
-      break;
-  }
-};
+
 
 function PostList() {
-  const { user, db, calculateLevel } = useFirebase();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  // Add these state variables at the top with other states
-  const [hasMore, setHasMore] = useState(true);
-  const [lastPost, setLastPost] = useState(null);
-
-  useEffect(() => {
-    const postsQuery = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
-      limit(5)
-    );
-
-    const unsubscribe = onSnapshot(postsQuery, async (snapshot) => {
-      const postsData = await Promise.all(snapshot.docs.map(async (doc) => {
-        const postData = doc.data();
-        console.log('Current post data:', postData.title, 'Comment count:', postData.commentCount);
-        
-        // Get comments collection for this post
-        // In the useEffect and loadMorePosts functions, update the comments query:
-        const commentsRef = collection(db, 'posts', doc.id, 'comments');
-        const commentsQuery = query(commentsRef);  // Remove the where clause since we're already in the post's subcollection
-        const commentsSnap = await getDocs(commentsQuery);
-                
-        console.log('Actual comments count:', commentsSnap.size, 'for post:', postData.title);
-        
-        // Update post's commentCount if it doesn't match
-        if (commentsSnap.size !== postData.commentCount) {
-          console.log('Updating comment count from', postData.commentCount, 'to', commentsSnap.size);
-          await updateDoc(doc.ref, {
-            commentCount: commentsSnap.size
-          });
-        }
-
-        return {
-          id: doc.id,
-          ...postData,
-          commentCount: commentsSnap.size,
-          createdAt: postData.createdAt
-        };
-      }));
-    
-      console.log('Final posts data:', postsData.map(p => ({ title: p.title, comments: p.commentCount })));
-      setPosts(postsData);
-      setLastPost(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(snapshot.docs.length === 5);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [db]);
-
-  const loadMorePosts = async () => {
-    if (!hasMore || loading) return;
-    
-    setLoading(true);
-    const nextQuery = query(
-      collection(db, 'posts'),
-      orderBy('createdAt', 'desc'),
-      startAfter(lastPost),
-      limit(5)
-    );
-
-    try {
-      const snapshot = await getDocs(nextQuery);
-      const newPosts = await Promise.all(snapshot.docs.map(async (doc) => {
-        const postData = doc.data();
-        console.log('Loading more - Current post:', postData.title, 'Comment count:', postData.commentCount);
-        
-        // Get comments for this post
-        const commentsRef = collection(db, 'comments');
-        const commentsQuery = query(commentsRef, where('postId', '==', doc.id));
-        const commentsSnap = await getDocs(commentsQuery);
-        
-        console.log('Loading more - Actual comments:', commentsSnap.size, 'for post:', postData.title);
-        
-        if (commentsSnap.size !== postData.commentCount) {
-          console.log('Loading more - Updating count from', postData.commentCount, 'to', commentsSnap.size);
-          await updateDoc(doc.ref, {
-            commentCount: commentsSnap.size
-          });
-        }
-
-        return {
-          id: doc.id,
-          ...postData,
-          commentCount: commentsSnap.size,
-          createdAt: postData.createdAt
-        };
-      }));
-      
-      console.log('Loading more - Final data:', newPosts.map(p => ({ title: p.title, comments: p.commentCount })));
-      setPosts(prevPosts => [...prevPosts, ...newPosts]);
-      setLastPost(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(snapshot.docs.length === 5);
-    } catch (error) {
-      console.error('Error loading more posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add this at the bottom of your posts list, just before the closing div
-  {hasMore && (
-    <button 
-      onClick={loadMorePosts}
-      className="w-full py-4 text-center text-gray-600 hover:text-indigo-600 transition-colors"
-      disabled={loading}
-    >
-      {loading ? 'Loading...' : 'Load More Discussions'}
-    </button>
-  )}
-
-  const handleVote = async (postId, currentVoters, voteType, post) => {
-    if (!user) return;
-    
-    const postRef = doc(db, 'posts', postId);
-    const userVote = currentVoters?.[user.uid];
-    
-    const batch = writeBatch(db);
-    
-    // Remove old vote if exists
-    if (userVote) {
-      // Get the current vote count safely
-      const currentVotes = (userVote === 'up' ? post.upVotes : post.downVotes) || 0;
-      if (currentVotes > 0) {  // Only decrement if current value is > 0
-        batch.update(postRef, {
-          [`${userVote}Votes`]: increment(-1),
-          interactions: increment(-1),
-          [`voters.${user.uid}`]: deleteField()
-        });
-      }
-    }
-    
-    // Add new vote if different from old vote
-    if (!userVote || userVote !== voteType) {
-      batch.update(postRef, {
-        [`${voteType}Votes`]: increment(1),
-        interactions: increment(1),
-        [`voters.${user.uid}`]: voteType
-      });
-    }
-    
-    try {
-      await batch.commit();
-    } catch (error) {
-      console.error('Error updating vote:', error);
-    }
-  };
+  const { user, calculateLevel } = useFirebase();
+  const { posts, loading, hasMore, loadMore } = usePosts();
+  const { handleVote } = useVoting();
 
   // Add loading skeleton
   if (loading) {
@@ -321,11 +140,7 @@ function PostList() {
                     <span className="text-sm text-gray-600">{post.userName}</span>
                     <div className="flex items-center space-x-6">
                       <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleVote(post.id, post.voters, 'up', post);
-                        }}
+                        onClick={() => handleVote(post.id, 'up', post)}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
                           ${post.voters?.[user?.uid] === 'up' ? 'text-indigo-600' : 'text-gray-500'}`}
@@ -337,11 +152,7 @@ function PostList() {
                         </span>
                       </button>
                       <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleVote(post.id, post.voters, 'down', post);
-                        }}
+                        onClick={() => handleVote(post.id, 'down', post)}
                         disabled={!user}
                         className={`flex items-center space-x-1 text-lg hover:scale-110 transition-transform disabled:opacity-50
                           ${post.voters?.[user?.uid] === 'down' ? 'text-indigo-600' : 'text-gray-500'}`}
@@ -373,7 +184,7 @@ function PostList() {
             
             {hasMore && (
               <button 
-                onClick={loadMorePosts}
+                onClick={loadMore}
                 className="w-full py-4 mt-4 text-center text-gray-600 hover:text-indigo-600 
                   transition-colors bg-white rounded-xl border border-gray-100 hover:border-indigo-100"
                 disabled={loading}

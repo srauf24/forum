@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { useFirebase } from '../../contexts/FirebaseContext';
 
 function ProtectedRoute({ children }) {
@@ -10,5 +11,9 @@ function ProtectedRoute({ children }) {
 
   return children;
 }
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default ProtectedRoute;

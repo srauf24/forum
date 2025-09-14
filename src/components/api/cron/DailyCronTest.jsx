@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { collection, addDoc } from 'firebase/firestore'; // Add this import
 
 function DailyCronTest() {
     const [status, setStatus] = useState('idle');
-    const { user, db } = useFirebase();
+    const { db } = useFirebase();
 
     const generateDiscussion = async () => {
         setStatus('running');
@@ -30,7 +30,6 @@ function DailyCronTest() {
                 .replace(/\r/g, ' ')
                 .trim();
 
-            console.log('Cleaned response:', responseText);
             const topic = JSON.parse(responseText);
 
             // Validate single book/author
@@ -39,7 +38,7 @@ function DailyCronTest() {
             }
 
             // Update Firestore code
-            const docRef = await addDoc(collection(db, 'posts'), {
+            await addDoc(collection(db, 'posts'), {
                 title: `📚✨ Bookish Bot: ${topic.title}`,
                 content: topic.content,
                 createdAt: new Date(),
@@ -55,7 +54,6 @@ function DailyCronTest() {
             });
 
             setStatus('success');
-            console.log('Generated post:', topic);
         } catch (error) {
             setStatus('error');
             console.error('Test failed:', error);

@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 function UserStats({ userId, compact = false }) {
   const { db, calculateLevel, calculateProgress } = useFirebase();
   
-  // Return early if no userId is provided
-  if (!userId) {
-    return null;
-  }
-
   const [stats, setStats] = useState({
     level: 1,
     progress: 0,
@@ -19,10 +15,9 @@ function UserStats({ userId, compact = false }) {
     posts: 0
   });
 
-  const [showProgress, setShowProgress] = useState(false);
-
-  // Remove duplicate useEffects and keep only one
   useEffect(() => {
+    if (!userId) return;
+
     const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
     const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
 
@@ -68,104 +63,9 @@ function UserStats({ userId, compact = false }) {
     };
   }, [db, userId, calculateLevel, calculateProgress]);
 
-  useEffect(() => {
-    // Query posts for this user
-    const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
-    const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
-
-    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
-      let totalUpvotes = 0;
-      let totalInteractions = 0;
-      let achievements = [];
-
-      snapshot.docs.forEach(doc => {
-        const post = doc.data();
-        totalUpvotes += (post.upVotes || 0);
-        totalInteractions += (post.upVotes || 0) + (post.downVotes || 0) + (post.commentCount || 0);
-      });
-
-      if (totalUpvotes >= 100) achievements.push('POPULAR_POST');
-      if (snapshot.size >= 10) achievements.push('BOOKWORM');
-
-      // Update stats with level calculations
-      const level = calculateLevel(totalInteractions);
-      const progress = calculateProgress(totalInteractions);
-
-      if (totalInteractions >= 1000) achievements.push('INFLUENCER');
-
-      setStats(prev => ({
-        ...prev,
-        level,
-        progress,
-        achievements: [...new Set([...prev.achievements, ...achievements])],
-        totalUpvotes
-      }));
-    });
-
-    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
-      if (snapshot.size >= 50) {
-        setStats(prev => ({
-          ...prev,
-          achievements: [...new Set([...prev.achievements, 'CONTRIBUTOR'])]
-        }));
-      }
-    });
-
-    return () => {
-      unsubscribePosts();
-      unsubscribeComments();
-    };
-  }, [db, userId, calculateLevel, calculateProgress]);
-
-  
-  useEffect(() => {
-    // Query posts for this user
-    const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
-    const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
-
-    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
-      let totalUpvotes = 0;
-      let totalInteractions = 0;
-      let achievements = [];
-
-      snapshot.docs.forEach(doc => {
-        const post = doc.data();
-        totalUpvotes += (post.upVotes || 0);
-        totalInteractions += (post.upVotes || 0) + (post.downVotes || 0) + (post.commentCount || 0);
-      });
-
-      if (totalUpvotes >= 100) achievements.push('POPULAR_POST');
-      if (snapshot.size >= 10) achievements.push('BOOKWORM');
-
-      // Update stats with level calculations
-      const level = calculateLevel(totalInteractions);
-      const progress = calculateProgress(totalInteractions);
-
-      if (totalInteractions >= 1000) achievements.push('INFLUENCER');
-
-      setStats(prev => ({
-        ...prev,
-        level,
-        progress,
-        achievements: [...new Set([...prev.achievements, ...achievements])],
-        totalUpvotes
-      }));
-    });
-
-    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
-      if (snapshot.size >= 50) {
-        setStats(prev => ({
-          ...prev,
-          achievements: [...new Set([...prev.achievements, 'CONTRIBUTOR'])]
-        }));
-      }
-    });
-
-    return () => {
-      unsubscribePosts();
-      unsubscribeComments();
-    };
-  }, [db, userId, calculateLevel, calculateProgress]);
+  if (!userId) {
+    return null;
+  }
 
   // Achievement badges in order from easiest to hardest
   const badges = {
@@ -174,52 +74,6 @@ function UserStats({ userId, compact = false }) {
     LITERARY_LUMINARY: { icon: "🌟", name: "Literary Luminary", goal: 500 },
     INFLUENCER: { icon: "👑", name: "Influencer", goal: 1000 }
   };
-  
-  // Update the useEffect to track all stats
-  useEffect(() => {
-    const postsQuery = query(collection(db, 'posts'), where('userId', '==', userId));
-    const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
-  
-    const unsubscribePosts = onSnapshot(postsQuery, (snapshot) => {
-      let totalInteractions = 0;
-      let achievements = [];
-      
-      // Track post count for Bookworm
-      if (snapshot.size >= 10) achievements.push('BOOKWORM');
-      
-      // Track interactions for Literary Luminary and Influencer
-      snapshot.docs.forEach(doc => {
-        const post = doc.data();
-        const postInteractions = (post.upVotes || 0) + (post.downVotes || 0) + (post.commentCount || 0);
-        totalInteractions += postInteractions;
-        
-        if (postInteractions >= 500) achievements.push('LITERARY_LUMINARY');
-      });
-      
-      if (totalInteractions >= 1000) achievements.push('INFLUENCER');
-  
-      setStats(prev => ({
-        ...prev,
-        posts: snapshot.size,
-        totalInteractions,
-        achievements: [...new Set([...prev.achievements, ...achievements])]
-      }));
-    });
-  
-    const unsubscribeComments = onSnapshot(commentsQuery, (snapshot) => {
-      if (snapshot.size >= 50) {
-        setStats(prev => ({
-          ...prev,
-          achievements: [...new Set([...prev.achievements, 'CONTRIBUTOR'])]
-        }));
-      }
-    });
-  
-    return () => {
-      unsubscribePosts();
-      unsubscribeComments();
-    };
-  }, [db, userId, calculateLevel, calculateProgress]);
 
   if (compact) {
     return (
@@ -280,5 +134,10 @@ function UserStats({ userId, compact = false }) {
     </div>
   );
 }
+
+UserStats.propTypes = {
+  userId: PropTypes.string.isRequired,
+  compact: PropTypes.bool,
+};
 
 export default UserStats;

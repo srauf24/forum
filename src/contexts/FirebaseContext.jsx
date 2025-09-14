@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-hot-toast';
 import { db } from '../config/firebase';
 import {
   getAuth,
@@ -46,7 +48,18 @@ export function FirebaseProvider({ children }) {
     comments: 0
   });
 
-  // Add stats tracking
+  const calculateLevel = useCallback((interactions) => {
+    return Math.floor(Math.sqrt(interactions / 10)) + 1;
+  }, []);
+
+  const calculateProgress = useCallback((interactions) => {
+    const currentLevel = calculateLevel(interactions);
+    const nextLevelPoints = (currentLevel * currentLevel) * 10;
+    const currentLevelPoints = ((currentLevel - 1) * (currentLevel - 1)) * 10;
+    const progress = ((interactions - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
+    return Math.min(progress, 100);
+  }, [calculateLevel]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -100,7 +113,7 @@ export function FirebaseProvider({ children }) {
       unsubscribePosts();
       unsubscribeComments();
     };
-  }, [user, db]);
+  }, [user, calculateLevel, calculateProgress]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -130,6 +143,7 @@ export function FirebaseProvider({ children }) {
       }, { merge: true }); // merge: true will update existing fields and keep others
     } catch (error) {
       console.error('Error signing in:', error);
+      toast.error('Failed to sign in. Please try again.');
       throw error;
     }
   };
@@ -141,17 +155,6 @@ export function FirebaseProvider({ children }) {
       console.error('Error signing out:', error);
       throw error;
     }
-  };
-  const calculateLevel = (interactions) => {
-    return Math.floor(Math.sqrt(interactions / 10)) + 1;
-  };
-
-  const calculateProgress = (interactions) => {
-    const currentLevel = calculateLevel(interactions);
-    const nextLevelPoints = (currentLevel * currentLevel) * 10;
-    const currentLevelPoints = ((currentLevel - 1) * (currentLevel - 1)) * 10;
-    const progress = ((interactions - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
-    return Math.min(progress, 100);
   };
 
   // Add posts fetching
@@ -171,7 +174,7 @@ export function FirebaseProvider({ children }) {
     });
 
     return () => unsubscribe();
-  }, [db]);
+  }, []);
 
   return (
     <FirebaseContext.Provider value={{
@@ -191,6 +194,10 @@ export function FirebaseProvider({ children }) {
     </FirebaseContext.Provider>
   );
 }
+
+FirebaseProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export function useFirebase() {
   return useContext(FirebaseContext);

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -9,10 +10,10 @@ let db;
 try {
   if (getApps().length === 0) {
     console.log('Initializing Firebase Admin...');
-    console.log('Env var exists:', !!process.env.VITE_FIREBASE_SERVICE_ACCOUNT_KEY);
+    console.log('Env var exists:', !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
     
     try {
-      const serviceAccount = JSON.parse(process.env.VITE_FIREBASE_SERVICE_ACCOUNT_KEY);
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
       console.log('Service account parsed successfully');
       
       app = initializeApp({
@@ -45,15 +46,15 @@ export default async function handler(req, res) {
       throw new Error('Firestore not initialized');
     }
     // Test Firestore connection
-    const testDoc = await db.collection('posts').limit(1).get();
+    await db.collection('posts').limit(1).get();
     console.log('Firestore connection successful');
 
     // Add API key validation
-    if (!process.env.VITE_GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       throw new Error('Gemini API key not found');
     }
     console.log('Initializing Gemini API...');
-    const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `You are a passionate book reviewer sharing your latest read. Choose ONE random book from any genre or time period (avoid The Midnight Library or recently reviewed books). Write an engaging, personal review. Respond ONLY with a JSON object in this EXACT format:

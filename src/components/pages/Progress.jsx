@@ -1,10 +1,7 @@
-import React from 'react';
+
 import MyStats from './MyStats';
-import { useFirebase } from '../../contexts/FirebaseContext';
 
 function Progress() {
-  const { user } = useFirebase();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">

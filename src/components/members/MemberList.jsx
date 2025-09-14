@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where, getDocs } from 'firebase/firestore';
 import { useFirebase } from '../../contexts/FirebaseContext';
 
 function MemberList() {
-  const { user, db } = useFirebase();
+  const { db } = useFirebase();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 

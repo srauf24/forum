@@ -7,7 +7,6 @@ import { analyzeReviews } from '../../utils/sentimentAnalyzer';
 function BooksList() {
   const { db } = useFirebase();
   const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const q = query(
@@ -57,7 +56,6 @@ function BooksList() {
         .sort((a, b) => (b.upVotes - b.downVotes) - (a.upVotes - a.downVotes));
       
       setBooks(booksArray);
-      setLoading(false);
     });
 
     return () => unsubscribe();

@@ -66,53 +66,16 @@ function Recommendations() {
   
       IMPORTANT: Return ONLY the JSON array, no other text.`;
   
+    let response; // Declare response here
     try {
       const result = await model.generateContent(prompt);
-      const response = await result.response;
+      response = result.response;
       const cleanedResponse = response.text().replace(/```json\n?|\n?```/g, '').trim();
       return JSON.parse(cleanedResponse);
     } catch (error) {
       console.error('Error getting recommendations:', error);
       console.log('Raw response:', response?.text());
       return [];
-    }
-  };
-
-  const simulateSearch = async (book) => {
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-  
-    const searchPrompt = `Act as a search engine analyzing "${book.title}" by ${book.author}.
-      1. Find similar books based on:
-         - Genre matches
-         - Theme analysis
-         - Writing style
-         - Time period
-      2. Discover related discussions from:
-         - Book reviews
-         - Literary analyses
-         - Reader recommendations
-      
-      Format response as:
-      {
-        "searchResults": [
-          {
-            "title": "Found book title",
-            "relevance": "Why this book matches",
-            "confidence": 0-100
-          }
-        ],
-        "relatedTopics": ["topic1", "topic2"],
-        "searchInsights": "Key patterns found"
-      }`;
-  
-    try {
-      const result = await model.generateContent(searchPrompt);
-      const response = await result.response;
-      return JSON.parse(response.text());
-    } catch (error) {
-      console.error('Search simulation error:', error);
-      return null;
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { doc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore';
 import CommentList from '../comments/CommentList';
@@ -10,6 +10,7 @@ import { BiSolidLike, BiLike, BiSolidDislike, BiDislike } from 'react-icons/bi';
 function PostDetail() {
   const { id } = useParams();
   const { user, db } = useFirebase();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 

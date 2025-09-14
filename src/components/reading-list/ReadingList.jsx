@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useFirebase } from '../../contexts/FirebaseContext';
-import { collection, query, where, getDocs, updateDoc, doc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
-import AddBookForm from './AddBookForm';
+import { updateDoc, doc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 
 // Export the add function
 export const addToReadingList = async (db, userId, book) => {
@@ -22,8 +21,6 @@ function ReadingList() {
   const [readingList, setReadingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingBook, setEditingBook] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, book: null });
   // Update the initial state first
   const [newBook, setNewBook] = useState({
@@ -417,7 +414,7 @@ function ReadingList() {
           <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
             <p className="text-gray-500 mb-6">
-              Are you sure you want to remove "{deleteConfirmation.book?.title}" from your reading list?
+              Are you sure you want to remove &quot;{deleteConfirmation.book?.title}&quot; from your reading list?
             </p>
             <div className="flex justify-end gap-3">
               <button

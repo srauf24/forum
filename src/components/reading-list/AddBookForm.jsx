@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 
 function AddBookForm({ onAddBook, onCancel }) {
     const [newBook, setNewBook] = useState({
@@ -126,5 +127,10 @@ function AddBookForm({ onAddBook, onCancel }) {
         </form>
     );
 }
+
+AddBookForm.propTypes = {
+  onAddBook: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+};
 
 export default AddBookForm;

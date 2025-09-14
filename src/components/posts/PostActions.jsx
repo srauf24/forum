@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useFirebase } from '../../contexts/FirebaseContext';
 import { doc, updateDoc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -6,7 +7,7 @@ function PostActions({ post }) {
   const { user, db } = useFirebase();
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({
-    upVotes: post.upVotes,  // Remove the || 0 to allow negative values
+    upVotes: post.upVotes,
     downVotes: post.downVotes,
     commentCount: post.commentCount
   });
@@ -20,7 +21,7 @@ function PostActions({ post }) {
         const data = doc.data();
         setStats(prev => ({
           ...prev,
-          upVotes: data.upVotes,  // Allow negative values
+          upVotes: data.upVotes,
           downVotes: data.downVotes
         }));
       }
@@ -71,8 +72,8 @@ function PostActions({ post }) {
       const currentDownVotes = currentPost.downVotes || 0;
 
       await updateDoc(postRef, {
-        upVotes: isUpvote ? currentUpVotes - 1 : currentUpVotes,  // Decrease for upvote
-        downVotes: !isUpvote ? currentDownVotes - 1 : currentDownVotes  // Decrease for downvote
+        upVotes: isUpvote ? currentUpVotes - 1 : currentUpVotes,
+        downVotes: !isUpvote ? currentDownVotes - 1 : currentDownVotes
       });
     } catch (error) {
       console.error('Error updating votes:', error);
@@ -112,5 +113,14 @@ function PostActions({ post }) {
     </div>
   );
 }
+
+PostActions.propTypes = {
+  post: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    upVotes: PropTypes.number,
+    downVotes: PropTypes.number,
+    commentCount: PropTypes.number,
+  }).isRequired,
+};
 
 export default PostActions;
